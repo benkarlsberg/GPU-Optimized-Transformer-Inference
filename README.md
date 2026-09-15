@@ -71,6 +71,10 @@ Supported knobs (where hardware and dependencies allow): eager vs `torch.compile
 
 Raw timings are written as JSON under `results/runs/`. Figures are generated from those files. Summary write-ups live in [`RESULTS.md`](RESULTS.md), with separate sections for measured outcomes, open hypotheses, and planned follow-ups.
 
+## Paper
+
+A short technical report summarizing the single-GPU matrix study is in [`paper/main.pdf`](paper/main.pdf) (source: [`paper/main.tex`](paper/main.tex)).
+
 ## License
 
 MIT
