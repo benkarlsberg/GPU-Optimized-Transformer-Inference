@@ -1,0 +1,58 @@
+{
+  "env": {
+    "hostname": "BensPC",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "torch": {
+      "version": "2.11.0+cu128",
+      "cuda_available": true,
+      "cuda_version": "12.8",
+      "device_count": 1,
+      "device0": {
+        "name": "NVIDIA GeForce RTX 5070",
+        "total_memory_bytes": 12820480000,
+        "major": 12,
+        "minor": 0,
+        "multi_processor_count": 48
+      }
+    },
+    "nvidia_smi": "NVIDIA GeForce RTX 5070, 610.62, 12227 MiB"
+  },
+  "smoke_gpu": {
+    "config": {
+      "model": "HuggingFaceTB/SmolLM-135M",
+      "dtype": "fp16",
+      "device": "cuda",
+      "batch_size": 1,
+      "prompt_length": 64,
+      "max_new_tokens": 32,
+      "warmup": 2,
+      "iters": 5,
+      "compile": false,
+      "attention": "sdpa",
+      "seed": 0
+    },
+    "e2e_summary_ms": {
+      "warmup": 2,
+      "measured": 5,
+      "mean_ms": 624.463840003591,
+      "p50_ms": 620.2537000062875,
+      "p90_ms": 634.7845200099982,
+      "p99_ms": 636.6223920066841,
+      "samples_ms": [
+        619.319399993401,
+        631.7214000155218,
+        614.1980999964289,
+        620.2537000062875,
+        636.8266000063159
+      ]
+    },
+    "sample_run": {
+      "e2e_ms": 619.319399993401,
+      "tokens_per_second": 51.66962313846614,
+      "peak_memory_bytes": 280810496,
+      "prompt_tokens": 64,
+      "generated_tokens": 32,
+      "oom": false
+    }
+  }
+}
