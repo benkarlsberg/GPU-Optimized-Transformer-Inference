@@ -1,0 +1,7 @@
+ops: [rmsnorm, rmsnorm_residual, swiglu]
+dtypes: [fp16, fp32]
+rows: [1, 8, 64]
+hidden: [1024, 2048, 4096]
+warmup: 10
+iters: 50
+device: cuda

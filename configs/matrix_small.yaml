@@ -1,0 +1,13 @@
+base:
+  model: HuggingFaceTB/SmolLM-135M
+  device: cuda
+  attention: sdpa
+  seed: 0
+  warmup: 2
+  iters: 5
+axes:
+  dtype: [fp16, bf16]
+  batch_size: [1, 4]
+  prompt_length: [64, 256]
+  max_new_tokens: [32, 128]
+  compile: [false, true]

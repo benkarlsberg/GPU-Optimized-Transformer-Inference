@@ -1,0 +1,11 @@
+model: HuggingFaceTB/SmolLM-135M
+dtype: fp16
+device: cuda
+batch_size: 1
+prompt_length: 64
+max_new_tokens: 32
+warmup: 2
+iters: 5
+compile: false
+attention: sdpa
+seed: 0

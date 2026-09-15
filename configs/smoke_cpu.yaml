@@ -1,0 +1,11 @@
+model: HuggingFaceTB/SmolLM-135M
+dtype: fp32
+device: cpu
+batch_size: 1
+prompt_length: 32
+max_new_tokens: 8
+warmup: 1
+iters: 2
+compile: false
+attention: sdpa
+seed: 0
