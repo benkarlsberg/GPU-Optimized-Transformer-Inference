@@ -2,13 +2,13 @@
 
 ## Measured
 
-_No measurement campaigns committed yet. Fill only from `results/runs/` artifacts._
+No measurement campaigns are recorded in-tree yet. Entries below should cite artifacts under `results/runs/`.
 
 ### Hardware / software
 
 | Field | Value |
 |-------|-------|
-| GPU | _(from results/env.json)_ |
+| GPU | |
 | Driver | |
 | CUDA | |
 | PyTorch | |
@@ -22,16 +22,16 @@ _No measurement campaigns committed yet. Fill only from `results/runs/` artifact
 
 ### Findings
 
-_(After real runs only.)_
+|
 
 ## Hypotheses
 
-- Long-prompt prefill tends toward compute/SDPA bound; small-batch decode toward memory/KV bound.
-- `torch.compile` may help steady decode but can inflate cold TTFT.
-- Fused RMSNorm (+ residual) is likely memory-bandwidth sensitive.
+- Long-prompt prefill tends toward compute / SDPA bound; small-batch decode toward memory / KV bound.
+- `torch.compile` may help steady decode but can increase cold-start time to first token.
+- Fused RMSNorm (with residual) is likely memory-bandwidth sensitive.
 
 ## Planned
 
-- `configs/matrix_small.yaml` on a single RTX-class GPU
-- Kernel shape sweeps + E2E ablation
-- Profiler traces (do not commit large binaries)
+- Full `configs/matrix_small.yaml` on a single RTX-class GPU
+- Kernel shape sweeps and end-to-end ablations
+- Profiler traces retained locally (not committed as large binaries)

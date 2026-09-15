@@ -1,45 +1,36 @@
-# GPU testing (measurement machine)
+# GPU testing
 
-## Environment
+## Prerequisites
 
-On the Windows CUDA PC, reuse conda env **`nlp`**:
+- NVIDIA GPU with a working driver
+- PyTorch build with CUDA enabled
+- This repository installed editable: `pip install -e ".[dev]"`
 
-```bat
-conda activate nlp
-python -c "import torch; print(torch.__version__, torch.cuda.get_device_name(0))"
+Verify:
+
+```bash
+python -c "import torch; print(torch.__version__, torch.cuda.is_available(), torch.cuda.get_device_name(0) if torch.cuda.is_available() else None)"
 ```
 
-Expected on this project's measurement machine: torch `2.11.0+cu128` seeing an RTX 5070.
+## Smoke tests
 
-Do **not** install another PyTorch into `ml` (CPU build) or `base` unless isolating on purpose.
-
-## Install this package into `nlp`
-
-```bat
-cd <repo>
-pip install -e ".[dev]"
-```
-
-## Run
-
-```bat
-python scripts/record_environment.py --out results\env.json
+```bash
+python scripts/record_environment.py --out results/env.json
 pytest -m gpu
-python scripts/run_experiment.py --config configs\smoke_gpu.yaml
-python scripts/bench_kernels.py --config configs\kernels_smoke.yaml
+python scripts/run_experiment.py --config configs/smoke_gpu.yaml
+python scripts/bench_kernels.py --config configs/kernels_smoke.yaml
 ```
 
 ## Profiling
 
 ### PyTorch Profiler
 
-Use `goti.profiling.torch_profiler.profile_run` around a short generate loop.
-Export Chrome/TensorBoard traces locally; **do not commit** large trace files.
+Wrap a short generate loop with `goti.profiling.torch_profiler.profile_run`. Keep large trace files out of git.
 
-### Nsight (optional, if installed)
+### Nsight Systems (optional)
 
-```bat
-nsys profile -o results\nsys_smoke python scripts\run_experiment.py --config configs\smoke_gpu.yaml
+```bash
+nsys profile -o results/nsys_smoke python scripts/run_experiment.py --config configs/smoke_gpu.yaml
 ```
 
-Keep `.nsys-rep` artifacts out of git.
+`.nsys-rep` files are gitignored.
