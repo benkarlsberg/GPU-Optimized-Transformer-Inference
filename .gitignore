@@ -25,3 +25,10 @@ results/env.json
 hf_cache/
 *.log
 .cuda_ext_build/
+results/runs_batch_sweep*/
+results/*.log
+paper/*.aux
+paper/*.fdb_latexmk
+paper/*.fls
+paper/*.out
+paper/*.log

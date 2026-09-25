@@ -8,6 +8,7 @@
 \usepackage{hyperref}
 \usepackage{microtype}
 \usepackage{xcolor}
+\usepackage[section]{placeins}
 
 \title{Characterizing Single-GPU Decoder-Only Transformer Inference:\\
 Precision, Compilation, Batching, and Sequence Length on an RTX 5070}
@@ -23,6 +24,7 @@ On an NVIDIA GeForce RTX~5070, we measure synchronized end-to-end \texttt{genera
 All cells completed without out-of-memory failures.
 BF16 reduced end-to-end latency relative to FP16 in every paired comparison (median BF16/FP16 latency ratio $0.90$).
 Increasing batch size from 1 to 4 raised throughput by roughly $4\times$ while keeping wall-clock latency in a similar range.
+A follow-up batch-size sweep (1 to 256) locates the latency--throughput knee: latency stays near $2.3$\,s up to batch~32 while throughput rises about $31\times$, after which latency grows roughly linearly with batch size and throughput saturates near $2{,}400$ tok/s.
 Generation length dominated end-to-end time, while tokens-per-second stayed comparatively flat, consistent with decode-bound behavior under this harness.
 \texttt{torch.compile} yielded a median eager/compile latency ratio of $1.02$ (range $0.92$--$1.22$), indicating little systematic gain for this model and measurement window.
 We release the harness, configurations, and aggregated results to support reproduction.
@@ -62,7 +64,7 @@ Figure~\ref{fig:dtype} compares FP16 and BF16 latency for every matched non-dtyp
 BF16 was faster in all 16 pairs.
 The median BF16/FP16 latency ratio was $0.895$ (mean $0.890$).
 
-\begin{figure}[t]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{figs/dtype_latency.pdf}
 \caption{End-to-end mean latency for FP16 vs.\ BF16 across matched matrix cells.}
@@ -72,21 +74,65 @@ The median BF16/FP16 latency ratio was $0.895$ (mean $0.890$).
 \subsection{Batching and throughput}
 Figure~\ref{fig:batch} shows tokens-per-second versus batch size for FP16 eager runs.
 Moving from batch~1 to batch~4 increased throughput from roughly $40$--$50$ tok/s to roughly $180$--$210$ tok/s.
-End-to-end latency did not scale linearly with batch size, illustrating the usual serving tradeoff: batching amortizes work across requests more than it reduces single-request latency.
+End-to-end latency did not rise with batch size in this range: going from batch~1 to batch~4 raised throughput without a latency penalty.
+With only two batch sizes, however, the matrix cannot show where that stops, so we ran a dedicated sweep (Section~\ref{sec:sweep}).
 
-\begin{figure}[t]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.85\linewidth]{figs/batch_throughput.pdf}
 \caption{Throughput versus batch size (FP16, eager).}
 \label{fig:batch}
 \end{figure}
 
+\subsection{Batch-size sweep: the latency--throughput tradeoff}
+\label{sec:sweep}
+To locate where batching stops being free, we swept batch size over $\{1,2,4,\dots,256\}$ with all other factors fixed (BF16, eager, prompt~256, 128 new tokens; 2 warmup and 5 measured iterations per cell).
+We ran the sweep three times.
+The first pass was inconsistent with the matrix (batch~1 took $3.4$\,s versus $2.37$\,s in the matrix, and batch~256 was faster than batch~128), which we attribute to host-side variability on the workstation during that pass; it is excluded from the aggregate but kept in the released analysis file.
+The second pass ran batch sizes in descending order and the third in ascending order; they agreed within $2\%$ at every batch size, and Table~\ref{tab:sweep} and Figure~\ref{fig:tradeoff} report their mean.
+No cell ran out of memory; peak allocated memory was $4.0$\,GB at batch~256.
+
+\begin{table}[!htbp]
+\centering
+\begin{tabular}{rrrr}
+\toprule
+Batch & Latency (ms) & Throughput (tok/s) & Peak memory (MB) \\
+\midrule
+1 & 2303 & 56 & 283 \\
+2 & 2314 & 111 & 299 \\
+4 & 2354 & 218 & 328 \\
+8 & 2335 & 438 & 386 \\
+16 & 2317 & 884 & 502 \\
+32 & 2336 & 1754 & 733 \\
+64 & 3687 & 2222 & 1197 \\
+128 & 6827 & 2401 & 2126 \\
+256 & 13286 & 2467 & 3980 \\
+\bottomrule
+\end{tabular}
+\caption{Batch-size sweep (BF16, eager, prompt 256, 128 new tokens), mean of two passes.}
+\label{tab:sweep}
+\end{table}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.85\linewidth]{figs/latency_throughput_tradeoff.pdf}
+\caption{Latency versus throughput across the batch-size sweep. Each point is one batch size; the curve is flat up to batch 32 and then turns sharply upward.}
+\label{fig:tradeoff}
+\end{figure}
+
+Two regimes are visible.
+From batch~1 to batch~32, end-to-end latency stays between $2.30$ and $2.35$\,s (about $18$\,ms per decode step) while throughput rises from $56$ to $1{,}754$ tok/s.
+In this regime a decode step for this 135M-parameter model does not occupy the GPU, so per-step time is set by fixed costs that do not grow with batch size, and additional sequences are nearly free.
+Beyond batch~32 the GPU becomes the bottleneck: latency grows roughly in proportion to batch size ($3.7$\,s at 64, $6.8$\,s at 128, $13.3$\,s at 256) while throughput saturates between $2{,}200$ and $2{,}470$ tok/s.
+For a latency target, the useful operating point on this hardware is therefore around batch~32; batch~64 buys about $27\%$ more throughput at a $58\%$ latency cost, and larger batches add little throughput.
+We did not profile the decode step, so the attribution of the flat regime to fixed per-step costs is an interpretation of the curve shape rather than a measured breakdown.
+
 \subsection{Generation length}
 Figure~\ref{fig:gen} plots latency against generated token count for BF16 eager batch~1.
 Increasing generation length from 32 to 128 raised end-to-end latency by roughly $4\times$, while tokens-per-second remained near $50$--$55$ tok/s.
 Under this harness, wall-clock time tracks decode length more strongly than the modest prompt-length change ($64$ vs.\ $256$).
 
-\begin{figure}[t]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.75\linewidth]{figs/gen_latency.pdf}
 \caption{Latency versus generation length (BF16, eager, batch 1).}
@@ -98,7 +144,7 @@ Figure~\ref{fig:compile} reports eager/compile latency ratios.
 The median ratio was $1.015$ (mean $1.027$), ranging from $0.921$ to $1.218$.
 Thus \texttt{torch.compile} was approximately neutral on average for this model and measurement protocol, with occasional gains or regressions depending on the cell.
 
-\begin{figure}[t]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{figs/compile_speedup.pdf}
 \caption{Eager/compile end-to-end latency ratios ($>1$ means compile is faster).}
@@ -108,10 +154,12 @@ Thus \texttt{torch.compile} was approximately neutral on average for this model 
 \section{Discussion and limitations}
 These measurements characterize one GPU, one small model, and an end-to-end \texttt{generate()} timer.
 They do not isolate time-to-first-token or inter-token latency, do not evaluate weight quantization or continuous batching under load, and do not claim optimality of any backend.
-Within that scope, four conclusions are stable in the data: BF16 reduced latency vs.\ FP16; batching primarily improved throughput; generation length dominated wall time; and \texttt{torch.compile} did not provide a consistent speedup.
+The batch-size sweep uses a single configuration and reports its first, excluded pass openly; its two retained passes agreed closely, but results on a shared desktop workstation remain sensitive to host state.
+Within that scope, five conclusions are stable in the data: BF16 reduced latency vs.\ FP16; batching up to 32 raised throughput with no latency cost; beyond batch~32 latency grew roughly linearly while throughput saturated; generation length dominated wall time; and \texttt{torch.compile} did not provide a consistent speedup.
 
 \section{Conclusion}
-We measured a full 32-cell inference matrix on an RTX~5070 using a reproducible harness.
+We measured a full 32-cell inference matrix and a batch-size sweep on an RTX~5070 using a reproducible harness.
+The sweep shows a clear latency--throughput knee near batch~32 for this model.
 The results emphasize workload- and precision-dependent behavior and caution against assuming that compilation alone improves short, small-model inference runs.
 Code and aggregated artifacts are available in the accompanying repository.
 
