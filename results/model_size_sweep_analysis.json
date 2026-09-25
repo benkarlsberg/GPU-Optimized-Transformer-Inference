@@ -1,0 +1,1091 @@
+{
+  "description": "Model-size batch sweep: bf16, eager, prompt 256, 128 new tokens, 2 warmup + 5 measured iterations; mean of a descending and an ascending pass. Cells with shared_gpu_memory_mb well above baseline spilled into system RAM (Windows sysmem fallback) and are flagged invalid.",
+  "series": {
+    "SmolLM-135M (dynamic cache)": [
+      {
+        "batch": 1,
+        "passes": [
+          {
+            "pass": "runs_135m_hp_batch_sweep_rev",
+            "e2e_mean_ms": 2311.7139800218865,
+            "tokens_per_second": 55.370352188435334,
+            "peak_allocated_mb": 279.97802734375,
+            "peak_reserved_mb": 302.0,
+            "nvidia_smi_used_mb": 807,
+            "shared_gpu_memory_mb": 155
+          },
+          {
+            "pass": "runs_135m_hp_batch_sweep",
+            "e2e_mean_ms": 2305.2329200087115,
+            "tokens_per_second": 55.533189413172025,
+            "peak_allocated_mb": 279.47802734375,
+            "peak_reserved_mb": 302.0,
+            "nvidia_smi_used_mb": 807,
+            "shared_gpu_memory_mb": 155
+          }
+        ],
+        "model": "HuggingFaceTB/SmolLM-135M",
+        "cache": "dynamic",
+        "e2e_mean_ms": 2308.473450015299,
+        "tokens_per_second": 55.45177080080368,
+        "peak_allocated_mb": 279.72802734375,
+        "peak_reserved_mb": 302.0,
+        "nvidia_smi_used_mb": 807,
+        "shared_gpu_memory_mb": 155,
+        "pass_spread_pct": 0.2807509011261125,
+        "spilled_to_system_ram": false
+      },
+      {
+        "batch": 2,
+        "passes": [
+          {
+            "pass": "runs_135m_hp_batch_sweep_rev",
+            "e2e_mean_ms": 2336.8266199948266,
+            "tokens_per_second": 109.5550487781764,
+            "peak_allocated_mb": 295.86279296875,
+            "peak_reserved_mb": 328.0,
+            "nvidia_smi_used_mb": 833,
+            "shared_gpu_memory_mb": 155
+          },
+          {
+            "pass": "runs_135m_hp_batch_sweep",
+            "e2e_mean_ms": 2327.367480006069,
+            "tokens_per_second": 110.00456262794549,
+            "peak_allocated_mb": 296.48779296875,
+            "peak_reserved_mb": 310.0,
+            "nvidia_smi_used_mb": 815,
+            "shared_gpu_memory_mb": 155
+          }
+        ],
+        "model": "HuggingFaceTB/SmolLM-135M",
+        "cache": "dynamic",
+        "e2e_mean_ms": 2332.097050000448,
+        "tokens_per_second": 109.77980570306094,
+        "peak_allocated_mb": 296.17529296875,
+        "peak_reserved_mb": 319.0,
+        "nvidia_smi_used_mb": 824,
+        "shared_gpu_memory_mb": 155,
+        "pass_spread_pct": 0.4056066186763477,
+        "spilled_to_system_ram": false
+      },
+      {
+        "batch": 4,
+        "passes": [
+          {
+            "pass": "runs_135m_hp_batch_sweep_rev",
+            "e2e_mean_ms": 2374.4126400211826,
+            "tokens_per_second": 215.63364161264576,
+            "peak_allocated_mb": 324.5703125,
+            "peak_reserved_mb": 376.0,
+            "nvidia_smi_used_mb": 881,
+            "shared_gpu_memory_mb": 155
+          },
+          {
+            "pass": "runs_135m_hp_batch_sweep",
+            "e2e_mean_ms": 2355.6606400292367,
+            "tokens_per_second": 217.36281180812367,
+            "peak_allocated_mb": 325.1953125,
+            "peak_reserved_mb": 374.0,
+            "nvidia_smi_used_mb": 879,
+            "shared_gpu_memory_mb": 155
+          }
+        ],
+        "model": "HuggingFaceTB/SmolLM-135M",
+        "cache": "dynamic",
+        "e2e_mean_ms": 2365.0366400252096,
+        "tokens_per_second": 216.4982267103847,
+        "peak_allocated_mb": 324.8828125,
+        "peak_reserved_mb": 375.0,
+        "nvidia_smi_used_mb": 880,
+        "shared_gpu_memory_mb": 155,
+        "pass_spread_pct": 0.7928841217337774,
+        "spilled_to_system_ram": false
+      },
+      {
+        "batch": 8,
+        "passes": [
+          {
+            "pass": "runs_135m_hp_batch_sweep_rev",
+            "e2e_mean_ms": 2335.794960008934,
+            "tokens_per_second": 438.4030233714589,
+            "peak_allocated_mb": 383.0478515625,
+            "peak_reserved_mb": 454.0,
+            "nvidia_smi_used_mb": 959,
+            "shared_gpu_memory_mb": 155
+          },
+          {
+            "pass": "runs_135m_hp_batch_sweep",
+            "e2e_mean_ms": 2323.6672200262547,
+            "tokens_per_second": 440.6879992741823,
+            "peak_allocated_mb": 383.4853515625,
+            "peak_reserved_mb": 452.0,
+            "nvidia_smi_used_mb": 957,
+            "shared_gpu_memory_mb": 155
+          }
+        ],
+        "model": "HuggingFaceTB/SmolLM-135M",
+        "cache": "dynamic",
+        "e2e_mean_ms": 2329.7310900175944,
+        "tokens_per_second": 439.54551132282063,
+        "peak_allocated_mb": 383.2666015625,
+        "peak_reserved_mb": 453.0,
+        "nvidia_smi_used_mb": 958,
+        "shared_gpu_memory_mb": 155,
+        "pass_spread_pct": 0.5205639412481676,
+        "spilled_to_system_ram": false
+      },
+      {
+        "batch": 16,
+        "passes": [
+          {
+            "pass": "runs_135m_hp_batch_sweep_rev",
+            "e2e_mean_ms": 2328.089060029015,
+            "tokens_per_second": 879.7402497915753,
+            "peak_allocated_mb": 500.8154296875,
+            "peak_reserved_mb": 544.0,
+            "nvidia_smi_used_mb": 1049,
+            "shared_gpu_memory_mb": 155
+          },
+          {
+            "pass": "runs_135m_hp_batch_sweep",
+            "e2e_mean_ms": 2354.7085200436413,
+            "tokens_per_second": 869.7468469231201,
+            "peak_allocated_mb": 501.0654296875,
+            "peak_reserved_mb": 524.0,
+            "nvidia_smi_used_mb": 1029,
+            "shared_gpu_memory_mb": 155
+          }
+        ],
+        "model": "HuggingFaceTB/SmolLM-135M",
+        "cache": "dynamic",
+        "e2e_mean_ms": 2341.398790036328,
+        "tokens_per_second": 874.7435483573477,
+        "peak_allocated_mb": 500.9404296875,
+        "peak_reserved_mb": 534.0,
+        "nvidia_smi_used_mb": 1039,
+        "shared_gpu_memory_mb": 155,
+        "pass_spread_pct": 1.1369041501133332,
+        "spilled_to_system_ram": false
+      },
+      {
+        "batch": 32,
+        "passes": [
+          {
+            "pass": "runs_135m_hp_batch_sweep_rev",
+            "e2e_mean_ms": 2335.7034999877214,
+            "tokens_per_second": 1753.7234514777037,
+            "peak_allocated_mb": 729.7880859375,
+            "peak_reserved_mb": 782.0,
+            "nvidia_smi_used_mb": 1287,
+            "shared_gpu_memory_mb": 155
+          },
+          {
+            "pass": "runs_135m_hp_batch_sweep",
+            "e2e_mean_ms": 2330.575419985689,
+            "tokens_per_second": 1757.5342823393914,
+            "peak_allocated_mb": 730.2255859375,
+            "peak_reserved_mb": 766.0,
+            "nvidia_smi_used_mb": 1271,
+            "shared_gpu_memory_mb": 155
+          }
+        ],
+        "model": "HuggingFaceTB/SmolLM-135M",
+        "cache": "dynamic",
+        "e2e_mean_ms": 2333.1394599867053,
+        "tokens_per_second": 1755.6288669085475,
+        "peak_allocated_mb": 730.0068359375,
+        "peak_reserved_mb": 774.0,
+        "nvidia_smi_used_mb": 1279,
+        "shared_gpu_memory_mb": 155,
+        "pass_spread_pct": 0.21979311952751598,
+        "spilled_to_system_ram": false
+      },
+      {
+        "batch": 64,
+        "passes": [
+          {
+            "pass": "runs_135m_hp_batch_sweep_rev",
+            "e2e_mean_ms": 3682.5403799768537,
+            "tokens_per_second": 2224.5525776646473,
+            "peak_allocated_mb": 1194.2958984375,
+            "peak_reserved_mb": 1248.0,
+            "nvidia_smi_used_mb": 1753,
+            "shared_gpu_memory_mb": 155
+          },
+          {
+            "pass": "runs_135m_hp_batch_sweep",
+            "e2e_mean_ms": 3677.7947400230914,
+            "tokens_per_second": 2227.4224812306447,
+            "peak_allocated_mb": 1193.6708984375,
+            "peak_reserved_mb": 1248.0,
+            "nvidia_smi_used_mb": 1753,
+            "shared_gpu_memory_mb": 155
+          }
+        ],
+        "model": "HuggingFaceTB/SmolLM-135M",
+        "cache": "dynamic",
+        "e2e_mean_ms": 3680.1675599999726,
+        "tokens_per_second": 2225.987529447646,
+        "peak_allocated_mb": 1193.9833984375,
+        "peak_reserved_mb": 1248.0,
+        "nvidia_smi_used_mb": 1753,
+        "shared_gpu_memory_mb": 155,
+        "pass_spread_pct": 0.12895173593026096,
+        "spilled_to_system_ram": false
+      },
+      {
+        "batch": 128,
+        "passes": [
+          {
+            "pass": "runs_135m_hp_batch_sweep_rev",
+            "e2e_mean_ms": 6754.326559999026,
+            "tokens_per_second": 2425.7050071308863,
+            "peak_allocated_mb": 2122.93701171875,
+            "peak_reserved_mb": 2206.0,
+            "nvidia_smi_used_mb": 2711,
+            "shared_gpu_memory_mb": 155
+          },
+          {
+            "pass": "runs_135m_hp_batch_sweep",
+            "e2e_mean_ms": 6754.2263799812645,
+            "tokens_per_second": 2425.7411585114414,
+            "peak_allocated_mb": 2122.31201171875,
+            "peak_reserved_mb": 2206.0,
+            "nvidia_smi_used_mb": 2711,
+            "shared_gpu_memory_mb": 155
+          }
+        ],
+        "model": "HuggingFaceTB/SmolLM-135M",
+        "cache": "dynamic",
+        "e2e_mean_ms": 6754.276469990145,
+        "tokens_per_second": 2425.723082821164,
+        "peak_allocated_mb": 2122.62451171875,
+        "peak_reserved_mb": 2206.0,
+        "nvidia_smi_used_mb": 2711,
+        "shared_gpu_memory_mb": 155,
+        "pass_spread_pct": 0.001483208722755056,
+        "spilled_to_system_ram": false
+      },
+      {
+        "batch": 256,
+        "passes": [
+          {
+            "pass": "runs_135m_hp_batch_sweep_rev",
+            "e2e_mean_ms": 12678.08141997084,
+            "tokens_per_second": 2584.618299565088,
+            "peak_allocated_mb": 3980.03173828125,
+            "peak_reserved_mb": 4214.0,
+            "nvidia_smi_used_mb": 4719,
+            "shared_gpu_memory_mb": 155
+          },
+          {
+            "pass": "runs_135m_hp_batch_sweep",
+            "e2e_mean_ms": 12689.650180004537,
+            "tokens_per_second": 2582.262383977114,
+            "peak_allocated_mb": 3979.59423828125,
+            "peak_reserved_mb": 4214.0,
+            "nvidia_smi_used_mb": 4721,
+            "shared_gpu_memory_mb": 160
+          }
+        ],
+        "model": "HuggingFaceTB/SmolLM-135M",
+        "cache": "dynamic",
+        "e2e_mean_ms": 12683.865799987689,
+        "tokens_per_second": 2583.440341771101,
+        "peak_allocated_mb": 3979.81298828125,
+        "peak_reserved_mb": 4214.0,
+        "nvidia_smi_used_mb": 4720,
+        "shared_gpu_memory_mb": 157.5,
+        "pass_spread_pct": 0.09120847079372378,
+        "spilled_to_system_ram": false
+      }
+    ],
+    "SmolLM-360M (dynamic cache)": [
+      {
+        "batch": 1,
+        "passes": [
+          {
+            "pass": "runs_batch_sweep_360m_rev",
+            "e2e_mean_ms": 2457.4372000060976,
+            "tokens_per_second": 52.087373178762746,
+            "peak_allocated_mb": 736.70458984375,
+            "peak_reserved_mb": 770.0,
+            "nvidia_smi_used_mb": 1324,
+            "shared_gpu_memory_mb": 169
+          },
+          {
+            "pass": "runs_batch_sweep_360m",
+            "e2e_mean_ms": 2457.377540017478,
+            "tokens_per_second": 52.08946160266659,
+            "peak_allocated_mb": 737.64208984375,
+            "peak_reserved_mb": 770.0,
+            "nvidia_smi_used_mb": 1324,
+            "shared_gpu_memory_mb": 169
+          }
+        ],
+        "model": "HuggingFaceTB/SmolLM-360M",
+        "cache": "dynamic",
+        "e2e_mean_ms": 2457.407370011788,
+        "tokens_per_second": 52.08841739071467,
+        "peak_allocated_mb": 737.17333984375,
+        "peak_reserved_mb": 770.0,
+        "nvidia_smi_used_mb": 1324,
+        "shared_gpu_memory_mb": 169,
+        "pass_spread_pct": 0.0024277614427070334,
+        "spilled_to_system_ram": false
+      },
+      {
+        "batch": 2,
+        "passes": [
+          {
+            "pass": "runs_batch_sweep_360m_rev",
+            "e2e_mean_ms": 2425.84630001802,
+            "tokens_per_second": 105.53182647092146,
+            "peak_allocated_mb": 761.7783203125,
+            "peak_reserved_mb": 812.0,
+            "nvidia_smi_used_mb": 1366,
+            "shared_gpu_memory_mb": 169
+          },
+          {
+            "pass": "runs_batch_sweep_360m",
+            "e2e_mean_ms": 2447.47497998178,
+            "tokens_per_second": 104.59836882206596,
+            "peak_allocated_mb": 762.4814453125,
+            "peak_reserved_mb": 812.0,
+            "nvidia_smi_used_mb": 1366,
+            "shared_gpu_memory_mb": 169
+          }
+        ],
+        "model": "HuggingFaceTB/SmolLM-360M",
+        "cache": "dynamic",
+        "e2e_mean_ms": 2436.6606399999,
+        "tokens_per_second": 105.06509764649371,
+        "peak_allocated_mb": 762.1298828125,
+        "peak_reserved_mb": 812.0,
+        "nvidia_smi_used_mb": 1366,
+        "shared_gpu_memory_mb": 169,
+        "pass_spread_pct": 0.8876361200532613,
+        "spilled_to_system_ram": false
+      },
+      {
+        "batch": 4,
+        "passes": [
+          {
+            "pass": "runs_batch_sweep_360m_rev",
+            "e2e_mean_ms": 2412.372239981778,
+            "tokens_per_second": 212.24194619823632,
+            "peak_allocated_mb": 811.30126953125,
+            "peak_reserved_mb": 874.0,
+            "nvidia_smi_used_mb": 1428,
+            "shared_gpu_memory_mb": 169
+          },
+          {
+            "pass": "runs_batch_sweep_360m",
+            "e2e_mean_ms": 2446.980019984767,
+            "tokens_per_second": 209.2392832149761,
+            "peak_allocated_mb": 813.00439453125,
+            "peak_reserved_mb": 878.0,
+            "nvidia_smi_used_mb": 1432,
+            "shared_gpu_memory_mb": 169
+          }
+        ],
+        "model": "HuggingFaceTB/SmolLM-360M",
+        "cache": "dynamic",
+        "e2e_mean_ms": 2429.6761299832724,
+        "tokens_per_second": 210.7406147066062,
+        "peak_allocated_mb": 812.15283203125,
+        "peak_reserved_mb": 876.0,
+        "nvidia_smi_used_mb": 1430,
+        "shared_gpu_memory_mb": 169,
+        "pass_spread_pct": 1.424378318406871,
+        "spilled_to_system_ram": false
+      },
+      {
+        "batch": 8,
+        "passes": [
+          {
+            "pass": "runs_batch_sweep_360m_rev",
+            "e2e_mean_ms": 2436.343299970031,
+            "tokens_per_second": 420.3127485542557,
+            "peak_allocated_mb": 910.97216796875,
+            "peak_reserved_mb": 936.0,
+            "nvidia_smi_used_mb": 1490,
+            "shared_gpu_memory_mb": 169
+          },
+          {
+            "pass": "runs_batch_sweep_360m",
+            "e2e_mean_ms": 2465.3485600138083,
+            "tokens_per_second": 415.3667704218268,
+            "peak_allocated_mb": 911.05029296875,
+            "peak_reserved_mb": 936.0,
+            "nvidia_smi_used_mb": 1490,
+            "shared_gpu_memory_mb": 169
+          }
+        ],
+        "model": "HuggingFaceTB/SmolLM-360M",
+        "cache": "dynamic",
+        "e2e_mean_ms": 2450.8459299919195,
+        "tokens_per_second": 417.83975948804124,
+        "peak_allocated_mb": 911.01123046875,
+        "peak_reserved_mb": 936.0,
+        "nvidia_smi_used_mb": 1490,
+        "shared_gpu_memory_mb": 169,
+        "pass_spread_pct": 1.183479536140126,
+        "spilled_to_system_ram": false
+      },
+      {
+        "batch": 16,
+        "passes": [
+          {
+            "pass": "runs_batch_sweep_360m_rev",
+            "e2e_mean_ms": 2476.9555799895898,
+            "tokens_per_second": 826.8492853936035,
+            "peak_allocated_mb": 1126.06396484375,
+            "peak_reserved_mb": 1166.0,
+            "nvidia_smi_used_mb": 1720,
+            "shared_gpu_memory_mb": 169
+          },
+          {
+            "pass": "runs_batch_sweep_360m",
+            "e2e_mean_ms": 2484.800160001032,
+            "tokens_per_second": 824.2379582037845,
+            "peak_allocated_mb": 1125.71240234375,
+            "peak_reserved_mb": 1170.0,
+            "nvidia_smi_used_mb": 1724,
+            "shared_gpu_memory_mb": 169
+          }
+        ],
+        "model": "HuggingFaceTB/SmolLM-360M",
+        "cache": "dynamic",
+        "e2e_mean_ms": 2480.877869995311,
+        "tokens_per_second": 825.543621798694,
+        "peak_allocated_mb": 1125.88818359375,
+        "peak_reserved_mb": 1168.0,
+        "nvidia_smi_used_mb": 1722,
+        "shared_gpu_memory_mb": 169,
+        "pass_spread_pct": 0.31620178108393265,
+        "spilled_to_system_ram": false
+      },
+      {
+        "batch": 32,
+        "passes": [
+          {
+            "pass": "runs_batch_sweep_360m_rev",
+            "e2e_mean_ms": 3505.679519986734,
+            "tokens_per_second": 1168.3912602334383,
+            "peak_allocated_mb": 1506.24755859375,
+            "peak_reserved_mb": 1568.0,
+            "nvidia_smi_used_mb": 2122,
+            "shared_gpu_memory_mb": 169
+          },
+          {
+            "pass": "runs_batch_sweep_360m",
+            "e2e_mean_ms": 3502.9574600048363,
+            "tokens_per_second": 1169.2999349908605,
+            "peak_allocated_mb": 1506.89599609375,
+            "peak_reserved_mb": 1538.0,
+            "nvidia_smi_used_mb": 2092,
+            "shared_gpu_memory_mb": 169
+          }
+        ],
+        "model": "HuggingFaceTB/SmolLM-360M",
+        "cache": "dynamic",
+        "e2e_mean_ms": 3504.318489995785,
+        "tokens_per_second": 1168.8455976121495,
+        "peak_allocated_mb": 1506.57177734375,
+        "peak_reserved_mb": 1553.0,
+        "nvidia_smi_used_mb": 2107,
+        "shared_gpu_memory_mb": 169,
+        "pass_spread_pct": 0.0776772998706732,
+        "spilled_to_system_ram": false
+      },
+      {
+        "batch": 64,
+        "passes": [
+          {
+            "pass": "runs_batch_sweep_360m_rev",
+            "e2e_mean_ms": 6300.272160000168,
+            "tokens_per_second": 1300.2615242765257,
+            "peak_allocated_mb": 2296.67724609375,
+            "peak_reserved_mb": 2426.0,
+            "nvidia_smi_used_mb": 2980,
+            "shared_gpu_memory_mb": 169
+          },
+          {
+            "pass": "runs_batch_sweep_360m",
+            "e2e_mean_ms": 6301.77810001187,
+            "tokens_per_second": 1299.9512596668162,
+            "peak_allocated_mb": 2297.44287109375,
+            "peak_reserved_mb": 2426.0,
+            "nvidia_smi_used_mb": 2980,
+            "shared_gpu_memory_mb": 174
+          }
+        ],
+        "model": "HuggingFaceTB/SmolLM-360M",
+        "cache": "dynamic",
+        "e2e_mean_ms": 6301.025130006019,
+        "tokens_per_second": 1300.106391971671,
+        "peak_allocated_mb": 2297.06005859375,
+        "peak_reserved_mb": 2426.0,
+        "nvidia_smi_used_mb": 2980,
+        "shared_gpu_memory_mb": 171.5,
+        "pass_spread_pct": 0.02389992073719978,
+        "spilled_to_system_ram": false
+      },
+      {
+        "batch": 128,
+        "passes": [
+          {
+            "pass": "runs_batch_sweep_360m_rev",
+            "e2e_mean_ms": 11546.473520016298,
+            "tokens_per_second": 1418.9614113623097,
+            "peak_allocated_mb": 3881.412109375,
+            "peak_reserved_mb": 3988.0,
+            "nvidia_smi_used_mb": 4542,
+            "shared_gpu_memory_mb": 169
+          },
+          {
+            "pass": "runs_batch_sweep_360m",
+            "e2e_mean_ms": 11540.60931999702,
+            "tokens_per_second": 1419.6824727416488,
+            "peak_allocated_mb": 3881.998046875,
+            "peak_reserved_mb": 3988.0,
+            "nvidia_smi_used_mb": 4542,
+            "shared_gpu_memory_mb": 174
+          }
+        ],
+        "model": "HuggingFaceTB/SmolLM-360M",
+        "cache": "dynamic",
+        "e2e_mean_ms": 11543.541420006659,
+        "tokens_per_second": 1419.3219420519792,
+        "peak_allocated_mb": 3881.705078125,
+        "peak_reserved_mb": 3988.0,
+        "nvidia_smi_used_mb": 4542,
+        "shared_gpu_memory_mb": 171.5,
+        "pass_spread_pct": 0.050800701499750404,
+        "spilled_to_system_ram": false
+      },
+      {
+        "batch": 256,
+        "passes": [
+          {
+            "pass": "runs_batch_sweep_360m_rev",
+            "e2e_mean_ms": 22282.924520014785,
+            "tokens_per_second": 1470.5431572177395,
+            "peak_allocated_mb": 7051.3896484375,
+            "peak_reserved_mb": 7248.0,
+            "nvidia_smi_used_mb": 7802,
+            "shared_gpu_memory_mb": 180
+          },
+          {
+            "pass": "runs_batch_sweep_360m",
+            "e2e_mean_ms": 22280.80607999582,
+            "tokens_per_second": 1470.682887395731,
+            "peak_allocated_mb": 7051.4677734375,
+            "peak_reserved_mb": 7248.0,
+            "nvidia_smi_used_mb": 7802,
+            "shared_gpu_memory_mb": 169
+          }
+        ],
+        "model": "HuggingFaceTB/SmolLM-360M",
+        "cache": "dynamic",
+        "e2e_mean_ms": 22281.865300005302,
+        "tokens_per_second": 1470.6130223067353,
+        "peak_allocated_mb": 7051.4287109375,
+        "peak_reserved_mb": 7248.0,
+        "nvidia_smi_used_mb": 7802,
+        "shared_gpu_memory_mb": 174.5,
+        "pass_spread_pct": 0.00950746264033061,
+        "spilled_to_system_ram": false
+      }
+    ],
+    "SmolLM-1.7B (dynamic cache)": [
+      {
+        "batch": 1,
+        "passes": [
+          {
+            "pass": "runs_batch_sweep_1p7b_rev",
+            "e2e_mean_ms": 1376.976940012537,
+            "tokens_per_second": 92.95839943902818,
+            "peak_allocated_mb": 3346.73486328125,
+            "peak_reserved_mb": 3534.0,
+            "nvidia_smi_used_mb": 4093,
+            "shared_gpu_memory_mb": 155
+          },
+          {
+            "pass": "runs_batch_sweep_1p7b",
+            "e2e_mean_ms": 1380.4143799934536,
+            "tokens_per_second": 92.72715795102332,
+            "peak_allocated_mb": 3345.85205078125,
+            "peak_reserved_mb": 3534.0,
+            "nvidia_smi_used_mb": 4093,
+            "shared_gpu_memory_mb": 155
+          }
+        ],
+        "model": "HuggingFaceTB/SmolLM-1.7B",
+        "cache": "dynamic",
+        "e2e_mean_ms": 1378.6956600029953,
+        "tokens_per_second": 92.84277869502574,
+        "peak_allocated_mb": 3346.29345703125,
+        "peak_reserved_mb": 3534.0,
+        "nvidia_smi_used_mb": 4093,
+        "shared_gpu_memory_mb": 155,
+        "pass_spread_pct": 0.249325509656657,
+        "spilled_to_system_ram": false
+      },
+      {
+        "batch": 2,
+        "passes": [
+          {
+            "pass": "runs_batch_sweep_1p7b_rev",
+            "e2e_mean_ms": 1504.9855600111187,
+            "tokens_per_second": 170.1015247493913,
+            "peak_allocated_mb": 3420.26513671875,
+            "peak_reserved_mb": 3498.0,
+            "nvidia_smi_used_mb": 4057,
+            "shared_gpu_memory_mb": 155
+          },
+          {
+            "pass": "runs_batch_sweep_1p7b",
+            "e2e_mean_ms": 1522.1808599773794,
+            "tokens_per_second": 168.18122656251572,
+            "peak_allocated_mb": 3420.26513671875,
+            "peak_reserved_mb": 3498.0,
+            "nvidia_smi_used_mb": 4057,
+            "shared_gpu_memory_mb": 155
+          }
+        ],
+        "model": "HuggingFaceTB/SmolLM-1.7B",
+        "cache": "dynamic",
+        "e2e_mean_ms": 1513.583209994249,
+        "tokens_per_second": 169.1413756559535,
+        "peak_allocated_mb": 3420.26513671875,
+        "peak_reserved_mb": 3498.0,
+        "nvidia_smi_used_mb": 4057,
+        "shared_gpu_memory_mb": 155,
+        "pass_spread_pct": 1.136065718271685,
+        "spilled_to_system_ram": false
+      },
+      {
+        "batch": 4,
+        "passes": [
+          {
+            "pass": "runs_batch_sweep_1p7b_rev",
+            "e2e_mean_ms": 1601.7920800019056,
+            "tokens_per_second": 319.64218559007986,
+            "peak_allocated_mb": 3566.47412109375,
+            "peak_reserved_mb": 3824.0,
+            "nvidia_smi_used_mb": 4383,
+            "shared_gpu_memory_mb": 155
+          },
+          {
+            "pass": "runs_batch_sweep_1p7b",
+            "e2e_mean_ms": 1626.3831799849868,
+            "tokens_per_second": 314.810144444749,
+            "peak_allocated_mb": 3566.47412109375,
+            "peak_reserved_mb": 3824.0,
+            "nvidia_smi_used_mb": 4383,
+            "shared_gpu_memory_mb": 155
+          }
+        ],
+        "model": "HuggingFaceTB/SmolLM-1.7B",
+        "cache": "dynamic",
+        "e2e_mean_ms": 1614.0876299934462,
+        "tokens_per_second": 317.2261650174145,
+        "peak_allocated_mb": 3566.47412109375,
+        "peak_reserved_mb": 3824.0,
+        "nvidia_smi_used_mb": 4383,
+        "shared_gpu_memory_mb": 155,
+        "pass_spread_pct": 1.523529424680683,
+        "spilled_to_system_ram": false
+      },
+      {
+        "batch": 8,
+        "passes": [
+          {
+            "pass": "runs_batch_sweep_1p7b_rev",
+            "e2e_mean_ms": 1801.8732999451458,
+            "tokens_per_second": 568.3000122646569,
+            "peak_allocated_mb": 3861.90869140625,
+            "peak_reserved_mb": 4256.0,
+            "nvidia_smi_used_mb": 4815,
+            "shared_gpu_memory_mb": 155
+          },
+          {
+            "pass": "runs_batch_sweep_1p7b",
+            "e2e_mean_ms": 1799.8899400234222,
+            "tokens_per_second": 568.9250206335416,
+            "peak_allocated_mb": 3861.90869140625,
+            "peak_reserved_mb": 4256.0,
+            "nvidia_smi_used_mb": 4815,
+            "shared_gpu_memory_mb": 155
+          }
+        ],
+        "model": "HuggingFaceTB/SmolLM-1.7B",
+        "cache": "dynamic",
+        "e2e_mean_ms": 1800.881619984284,
+        "tokens_per_second": 568.6125164490993,
+        "peak_allocated_mb": 3861.90869140625,
+        "peak_reserved_mb": 4256.0,
+        "nvidia_smi_used_mb": 4815,
+        "shared_gpu_memory_mb": 155,
+        "pass_spread_pct": 0.11013272053611789,
+        "spilled_to_system_ram": false
+      },
+      {
+        "batch": 16,
+        "passes": [
+          {
+            "pass": "runs_batch_sweep_1p7b_rev",
+            "e2e_mean_ms": 2228.1448599882424,
+            "tokens_per_second": 919.1505862977464,
+            "peak_allocated_mb": 4451.12158203125,
+            "peak_reserved_mb": 5748.0,
+            "nvidia_smi_used_mb": 6307,
+            "shared_gpu_memory_mb": 155
+          },
+          {
+            "pass": "runs_batch_sweep_1p7b",
+            "e2e_mean_ms": 2238.6065600207075,
+            "tokens_per_second": 914.8556120397704,
+            "peak_allocated_mb": 4451.12158203125,
+            "peak_reserved_mb": 5748.0,
+            "nvidia_smi_used_mb": 6307,
+            "shared_gpu_memory_mb": 155
+          }
+        ],
+        "model": "HuggingFaceTB/SmolLM-1.7B",
+        "cache": "dynamic",
+        "e2e_mean_ms": 2233.375710004475,
+        "tokens_per_second": 917.0030991687584,
+        "peak_allocated_mb": 4451.12158203125,
+        "peak_reserved_mb": 5748.0,
+        "nvidia_smi_used_mb": 6307,
+        "shared_gpu_memory_mb": 155,
+        "pass_spread_pct": 0.46842544161296523,
+        "spilled_to_system_ram": false
+      },
+      {
+        "batch": 32,
+        "passes": [
+          {
+            "pass": "runs_batch_sweep_1p7b_rev",
+            "e2e_mean_ms": 3231.857440015301,
+            "tokens_per_second": 1267.3838974395596,
+            "peak_allocated_mb": 5627.79736328125,
+            "peak_reserved_mb": 9700.0,
+            "nvidia_smi_used_mb": 10259,
+            "shared_gpu_memory_mb": 155
+          },
+          {
+            "pass": "runs_batch_sweep_1p7b",
+            "e2e_mean_ms": 3231.2642799690366,
+            "tokens_per_second": 1267.6165535191328,
+            "peak_allocated_mb": 5627.79736328125,
+            "peak_reserved_mb": 9700.0,
+            "nvidia_smi_used_mb": 10259,
+            "shared_gpu_memory_mb": 155
+          }
+        ],
+        "model": "HuggingFaceTB/SmolLM-1.7B",
+        "cache": "dynamic",
+        "e2e_mean_ms": 3231.560859992169,
+        "tokens_per_second": 1267.5002254793462,
+        "peak_allocated_mb": 5627.79736328125,
+        "peak_reserved_mb": 9700.0,
+        "nvidia_smi_used_mb": 10259,
+        "shared_gpu_memory_mb": 155,
+        "pass_spread_pct": 0.018355218173609352,
+        "spilled_to_system_ram": false
+      },
+      {
+        "batch": 64,
+        "passes": [
+          {
+            "pass": "runs_batch_sweep_1p7b_rev",
+            "e2e_mean_ms": 35103.86426001787,
+            "tokens_per_second": 233.36462660965492,
+            "peak_allocated_mb": 7983.2724609375,
+            "peak_reserved_mb": 24480.0,
+            "nvidia_smi_used_mb": 11827,
+            "shared_gpu_memory_mb": 13371
+          },
+          {
+            "pass": "runs_batch_sweep_1p7b",
+            "e2e_mean_ms": 35138.205760065466,
+            "tokens_per_second": 233.13655029467105,
+            "peak_allocated_mb": 7983.2724609375,
+            "peak_reserved_mb": 24392.0,
+            "nvidia_smi_used_mb": 11766,
+            "shared_gpu_memory_mb": 13285
+          }
+        ],
+        "model": "HuggingFaceTB/SmolLM-1.7B",
+        "cache": "dynamic",
+        "e2e_mean_ms": 35121.03501004167,
+        "tokens_per_second": 233.250588452163,
+        "peak_allocated_mb": 7983.2724609375,
+        "peak_reserved_mb": 24436.0,
+        "nvidia_smi_used_mb": 11796.5,
+        "shared_gpu_memory_mb": 13328,
+        "pass_spread_pct": 0.09778043283113816,
+        "spilled_to_system_ram": true
+      }
+    ],
+    "SmolLM-1.7B (static cache)": [
+      {
+        "batch": 1,
+        "passes": [
+          {
+            "pass": "runs_batch_sweep_1p7b_static_rev",
+            "e2e_mean_ms": 1704.4163000304252,
+            "tokens_per_second": 75.0998895033928,
+            "peak_allocated_mb": 3361.0966796875,
+            "peak_reserved_mb": 3488.0,
+            "nvidia_smi_used_mb": 3993,
+            "shared_gpu_memory_mb": 155
+          },
+          {
+            "pass": "runs_batch_sweep_1p7b_static",
+            "e2e_mean_ms": 1707.8126800013706,
+            "tokens_per_second": 74.95002976489292,
+            "peak_allocated_mb": 3360.2138671875,
+            "peak_reserved_mb": 3488.0,
+            "nvidia_smi_used_mb": 3993,
+            "shared_gpu_memory_mb": 155
+          }
+        ],
+        "model": "HuggingFaceTB/SmolLM-1.7B",
+        "cache": "static",
+        "e2e_mean_ms": 1706.114490015898,
+        "tokens_per_second": 75.02495963414286,
+        "peak_allocated_mb": 3360.6552734375,
+        "peak_reserved_mb": 3488.0,
+        "nvidia_smi_used_mb": 3993,
+        "shared_gpu_memory_mb": 155,
+        "pass_spread_pct": 0.19907104656931726,
+        "spilled_to_system_ram": false
+      },
+      {
+        "batch": 2,
+        "passes": [
+          {
+            "pass": "runs_batch_sweep_1p7b_static_rev",
+            "e2e_mean_ms": 1737.4014999950305,
+            "tokens_per_second": 147.34811098266192,
+            "peak_allocated_mb": 3448.0966796875,
+            "peak_reserved_mb": 3518.0,
+            "nvidia_smi_used_mb": 4023,
+            "shared_gpu_memory_mb": 155
+          },
+          {
+            "pass": "runs_batch_sweep_1p7b_static",
+            "e2e_mean_ms": 1727.572019980289,
+            "tokens_per_second": 148.18858020113183,
+            "peak_allocated_mb": 3448.0966796875,
+            "peak_reserved_mb": 3518.0,
+            "nvidia_smi_used_mb": 4023,
+            "shared_gpu_memory_mb": 155
+          }
+        ],
+        "model": "HuggingFaceTB/SmolLM-1.7B",
+        "cache": "static",
+        "e2e_mean_ms": 1732.4867599876598,
+        "tokens_per_second": 147.7683455918969,
+        "peak_allocated_mb": 3448.0966796875,
+        "peak_reserved_mb": 3518.0,
+        "nvidia_smi_used_mb": 4023,
+        "shared_gpu_memory_mb": 155,
+        "pass_spread_pct": 0.5673624896741741,
+        "spilled_to_system_ram": false
+      },
+      {
+        "batch": 4,
+        "passes": [
+          {
+            "pass": "runs_batch_sweep_1p7b_static_rev",
+            "e2e_mean_ms": 1753.0672199791297,
+            "tokens_per_second": 292.0643117036896,
+            "peak_allocated_mb": 3623.8935546875,
+            "peak_reserved_mb": 3900.0,
+            "nvidia_smi_used_mb": 4405,
+            "shared_gpu_memory_mb": 155
+          },
+          {
+            "pass": "runs_batch_sweep_1p7b_static",
+            "e2e_mean_ms": 1742.968020006083,
+            "tokens_per_second": 293.7587848799965,
+            "peak_allocated_mb": 3623.8935546875,
+            "peak_reserved_mb": 3900.0,
+            "nvidia_smi_used_mb": 4405,
+            "shared_gpu_memory_mb": 155
+          }
+        ],
+        "model": "HuggingFaceTB/SmolLM-1.7B",
+        "cache": "static",
+        "e2e_mean_ms": 1748.0176199926063,
+        "tokens_per_second": 292.911548291843,
+        "peak_allocated_mb": 3623.8935546875,
+        "peak_reserved_mb": 3900.0,
+        "nvidia_smi_used_mb": 4405,
+        "shared_gpu_memory_mb": 155,
+        "pass_spread_pct": 0.5777516117423059,
+        "spilled_to_system_ram": false
+      },
+      {
+        "batch": 8,
+        "passes": [
+          {
+            "pass": "runs_batch_sweep_1p7b_static_rev",
+            "e2e_mean_ms": 1853.0547800008208,
+            "tokens_per_second": 552.67446140221,
+            "peak_allocated_mb": 3975.6123046875,
+            "peak_reserved_mb": 4364.0,
+            "nvidia_smi_used_mb": 4869,
+            "shared_gpu_memory_mb": 155
+          },
+          {
+            "pass": "runs_batch_sweep_1p7b_static",
+            "e2e_mean_ms": 1842.169199953787,
+            "tokens_per_second": 555.8666438693188,
+            "peak_allocated_mb": 3975.6123046875,
+            "peak_reserved_mb": 4364.0,
+            "nvidia_smi_used_mb": 4869,
+            "shared_gpu_memory_mb": 155
+          }
+        ],
+        "model": "HuggingFaceTB/SmolLM-1.7B",
+        "cache": "static",
+        "e2e_mean_ms": 1847.611989977304,
+        "tokens_per_second": 554.2705526357644,
+        "peak_allocated_mb": 3975.6123046875,
+        "peak_reserved_mb": 4364.0,
+        "nvidia_smi_used_mb": 4869,
+        "shared_gpu_memory_mb": 155,
+        "pass_spread_pct": 0.5891702427828175,
+        "spilled_to_system_ram": false
+      },
+      {
+        "batch": 16,
+        "passes": [
+          {
+            "pass": "runs_batch_sweep_1p7b_static_rev",
+            "e2e_mean_ms": 2156.886180024594,
+            "tokens_per_second": 949.5187666793173,
+            "peak_allocated_mb": 4678.7060546875,
+            "peak_reserved_mb": 5274.0,
+            "nvidia_smi_used_mb": 5779,
+            "shared_gpu_memory_mb": 155
+          },
+          {
+            "pass": "runs_batch_sweep_1p7b_static",
+            "e2e_mean_ms": 2151.9208199810237,
+            "tokens_per_second": 951.7155453930652,
+            "peak_allocated_mb": 4678.7060546875,
+            "peak_reserved_mb": 5274.0,
+            "nvidia_smi_used_mb": 5779,
+            "shared_gpu_memory_mb": 155
+          }
+        ],
+        "model": "HuggingFaceTB/SmolLM-1.7B",
+        "cache": "static",
+        "e2e_mean_ms": 2154.403500002809,
+        "tokens_per_second": 950.6171560361913,
+        "peak_allocated_mb": 4678.7060546875,
+        "peak_reserved_mb": 5274.0,
+        "nvidia_smi_used_mb": 5779,
+        "shared_gpu_memory_mb": 155,
+        "pass_spread_pct": 0.2304749339463998,
+        "spilled_to_system_ram": false
+      },
+      {
+        "batch": 32,
+        "passes": [
+          {
+            "pass": "runs_batch_sweep_1p7b_static_rev",
+            "e2e_mean_ms": 2746.536560007371,
+            "tokens_per_second": 1491.3330317985556,
+            "peak_allocated_mb": 6085.0810546875,
+            "peak_reserved_mb": 7080.0,
+            "nvidia_smi_used_mb": 7585,
+            "shared_gpu_memory_mb": 155
+          },
+          {
+            "pass": "runs_batch_sweep_1p7b_static",
+            "e2e_mean_ms": 2754.8301399918273,
+            "tokens_per_second": 1486.8466653097591,
+            "peak_allocated_mb": 6085.0810546875,
+            "peak_reserved_mb": 7080.0,
+            "nvidia_smi_used_mb": 7585,
+            "shared_gpu_memory_mb": 155
+          }
+        ],
+        "model": "HuggingFaceTB/SmolLM-1.7B",
+        "cache": "static",
+        "e2e_mean_ms": 2750.683349999599,
+        "tokens_per_second": 1489.0898485541575,
+        "peak_allocated_mb": 6085.0810546875,
+        "peak_reserved_mb": 7080.0,
+        "nvidia_smi_used_mb": 7585,
+        "shared_gpu_memory_mb": 155,
+        "pass_spread_pct": 0.3015098042621849,
+        "spilled_to_system_ram": false
+      },
+      {
+        "batch": 64,
+        "passes": [
+          {
+            "pass": "runs_batch_sweep_1p7b_static_rev",
+            "e2e_mean_ms": 4011.2066000001505,
+            "tokens_per_second": 2042.2786717474005,
+            "peak_allocated_mb": 8897.8310546875,
+            "peak_reserved_mb": 10684.0,
+            "nvidia_smi_used_mb": 11189,
+            "shared_gpu_memory_mb": 155
+          },
+          {
+            "pass": "runs_batch_sweep_1p7b_static",
+            "e2e_mean_ms": 4004.379120026715,
+            "tokens_per_second": 2045.76061183694,
+            "peak_allocated_mb": 8897.8310546875,
+            "peak_reserved_mb": 10684.0,
+            "nvidia_smi_used_mb": 11189,
+            "shared_gpu_memory_mb": 155
+          }
+        ],
+        "model": "HuggingFaceTB/SmolLM-1.7B",
+        "cache": "static",
+        "e2e_mean_ms": 4007.792860013433,
+        "tokens_per_second": 2044.0196417921702,
+        "peak_allocated_mb": 8897.8310546875,
+        "peak_reserved_mb": 10684.0,
+        "nvidia_smi_used_mb": 11189,
+        "shared_gpu_memory_mb": 155,
+        "pass_spread_pct": 0.170355110952828,
+        "spilled_to_system_ram": false
+      }
+    ]
+  },
+  "environment": {
+    "timestamp_utc": "2026-09-25T19:45:20.666950+00:00",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "os": "Windows 11 (build 26200)",
+    "python": "3.11.15 | packaged by Anaconda, Inc. | (main, Mar 11 2026, 17:12:15) [MSC v.1942 64 bit (AMD64)]",
+    "cpu_count": 12,
+    "torch": {
+      "version": "2.11.0+cu128",
+      "cuda_available": true,
+      "cuda_version": "12.8",
+      "device_count": 1,
+      "device0": {
+        "name": "NVIDIA GeForce RTX 5070",
+        "total_memory_bytes": 12820480000,
+        "major": 12,
+        "minor": 0,
+        "multi_processor_count": 48
+      }
+    },
+    "nvidia_smi": "NVIDIA GeForce RTX 5070, 610.88, 12227 MiB",
+    "nvcc": null
+  }
+}

@@ -23,6 +23,7 @@
 | kernels_smoke | `configs/kernels_smoke.yaml` | RMSNorm / residual / SwiGLU microbench on CUDA |
 | matrix_small | `configs/matrix_small.yaml` | 32 cells; dtype × batch × prompt × gen × compile; **0 OOM** |
 | batch_sweep | `configs/batch_sweep.yaml`, `configs/batch_sweep_rev.yaml` | Batch 1–256, bf16 eager, prompt 256, gen 128; 3 passes; **0 OOM** |
+| model_size_sweep | `configs/batch_sweep_360m*.yaml`, `configs/batch_sweep_1p7b*.yaml` | SmolLM-135M/360M/1.7B, dynamic and static KV cache; 2 passes each |
 
 ### Matrix findings (`matrix_small`)
 
@@ -61,6 +62,38 @@ BF16, eager, prompt 256, 128 new tokens, 2 warmup + 5 measured iterations per ce
 - Knee near batch 32 on this GPU for this model. Batch 64 gives ~27% more throughput for ~58% more latency.
 
 Aggregate: `results/batch_sweep_analysis.json` (`scripts/analyze_batch_sweep.py`). Figure: `paper/figs/latency_throughput_tradeoff.pdf` (`scripts/plot_tradeoff.py`).
+
+### Model-size sweep (`model_size_sweep`)
+
+Same settings as the batch sweep (BF16, eager, prompt 256, 128 new tokens, 2 warmup + 5 measured). Two passes per configuration (descending, ascending), agreeing within 1.5% at every valid cell. 135M was re-run in the same session and matched the original sweep within 1.1% up to batch 128 (4.5% faster at 256).
+
+| Batch | 135M ms | 135M tok/s | 360M ms | 360M tok/s | 1.7B dyn ms | 1.7B dyn tok/s | 1.7B static ms | 1.7B static tok/s |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 2308 | 55 | 2457 | 52 | 1379 | 93 | 1706 | 75 |
+| 2 | 2332 | 110 | 2437 | 105 | 1514 | 169 | 1732 | 148 |
+| 4 | 2365 | 216 | 2430 | 211 | 1614 | 317 | 1748 | 293 |
+| 8 | 2330 | 440 | 2451 | 418 | 1801 | 569 | 1848 | 554 |
+| 16 | 2341 | 875 | 2481 | 826 | 2233 | 917 | 2154 | 951 |
+| 32 | 2333 | 1756 | 3504 | 1169 | 3232 | 1268 | 2751 | 1489 |
+| 64 | 3680 | 2226 | 6301 | 1300 | spilled | - | 4008 | 2044 |
+| 128 | 6754 | 2426 | 11544 | 1419 | - | - | - | - |
+| 256 | 12684 | 2583 | 22282 | 1471 | - | - | - | - |
+
+Memory (driver-reported in use / PyTorch peak allocated / peak reserved, largest batch run):
+
+| Series | Largest batch | In use | Allocated | Reserved |
+|---|---:|---:|---:|---:|
+| 135M | 256 | 4.7 GB | 4.0 GB | 4.2 GB |
+| 360M | 256 | 7.8 GB | 7.1 GB | 7.2 GB |
+| 1.7B dynamic | 32 | 10.3 GB | 5.6 GB | 9.7 GB |
+| 1.7B dynamic (spilled) | 64 | 11.8 GB + ~13 GB system RAM | 8.0 GB | 24.4 GB |
+| 1.7B static | 64 | 11.2 GB | 8.9 GB | 10.7 GB |
+
+- Knee: ~32 for 135M, ~16 for 360M, no flat region for 1.7B.
+- Batch-1 step time: 18.0 / 19.2 / 10.8 ms (135M / 360M / 1.7B). Not proportional to parameters; interpretation (per-layer cost tied to layer structure) not profiled.
+- 1.7B with the growing cache fragments the allocator; at batch 64 the Windows driver spills ~13 GB to system memory (35 s). Static cache fixes it.
+
+Aggregate: `results/model_size_sweep_analysis.json`. Figure: `paper/figs/model_size_sweep.pdf` (`scripts/plot_model_size.py`). Configs: `configs/batch_sweep_360m*.yaml`, `configs/batch_sweep_1p7b*.yaml`.
 
 ### Smoke baseline (earlier)
 

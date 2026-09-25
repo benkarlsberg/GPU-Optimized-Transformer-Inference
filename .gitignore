@@ -32,3 +32,4 @@ paper/*.fdb_latexmk
 paper/*.fls
 paper/*.out
 paper/*.log
+results/runs_*/

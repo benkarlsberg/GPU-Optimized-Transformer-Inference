@@ -11,7 +11,7 @@
 \usepackage[section]{placeins}
 
 \title{Characterizing Single-GPU Decoder-Only Transformer Inference:\\
-Precision, Compilation, Batching, and Sequence Length on an RTX 5070}
+Precision, Compilation, Batching, and Model Size on an RTX 5070}
 \author{Ben Karlsberg}
 \date{}
 
@@ -25,6 +25,8 @@ All cells completed without out-of-memory failures.
 BF16 reduced end-to-end latency relative to FP16 in every paired comparison (median BF16/FP16 latency ratio $0.90$).
 Increasing batch size from 1 to 4 raised throughput by roughly $4\times$ while keeping wall-clock latency in a similar range.
 A follow-up batch-size sweep (1 to 256) locates the latency--throughput knee: latency stays near $2.3$\,s up to batch~32 while throughput rises about $31\times$, after which latency grows roughly linearly with batch size and throughput levels off near $2{,}400$ tok/s.
+Repeating the sweep on 360M- and 1.7B-parameter models from the same family shows the knee moving to smaller batches as the model grows (batch~16 for 360M; no flat region for 1.7B), and shows that per-token latency at batch~1 does not follow parameter count: the 1.7B model decodes about $40\%$ faster per step than the 135M model.
+For the 1.7B model, the default growing KV cache fragments PyTorch's allocator enough that batch~64 reserves $24$\,GB for $8$\,GB of live data and silently spills into system memory; a preallocated static cache avoids this and reaches $2{,}044$ tok/s.
 Generation length dominated end-to-end time, while tokens-per-second stayed comparatively flat, consistent with decode-bound behavior under this harness.
 \texttt{torch.compile} yielded a median eager/compile latency ratio of $1.02$ (range $0.92$--$1.22$), indicating little systematic gain for this model and measurement window.
 We release the harness, configurations, and aggregated results at \url{https://github.com/benkarlsberg/GPU-Optimized-Transformer-Inference}.
@@ -38,7 +40,7 @@ Our goal is empirical clarity on a fixed model and hardware point---not a claim 
 
 Serving systems batch requests on the premise that small-batch decoding leaves the GPU underused~\cite{yu2022orca,kwon2023vllm,pope2023scaling}.
 How far batching stays free before latency rises depends on the model and the device, and is rarely reported for small models on consumer GPUs through the standard Hugging Face \texttt{generate()} path.
-Our contributions are (i)~a 32-cell factorial measurement of precision, batch size, prompt length, generation length, and \texttt{torch.compile} for a 135M-parameter model on an RTX~5070; (ii)~a batch-size sweep from 1 to 256 that locates the latency--throughput knee, with an explicit account of an excluded noisy pass; and (iii)~an open harness that records the configuration and environment of every run.
+Our contributions are (i)~a 32-cell factorial measurement of precision, batch size, prompt length, generation length, and \texttt{torch.compile} for a 135M-parameter model on an RTX~5070; (ii)~a batch-size sweep from 1 to 256 that locates the latency--throughput knee, with an explicit account of an excluded noisy pass; (iii)~a repetition of the sweep across three model sizes and two KV-cache implementations, including a memory-fragmentation failure mode that is invisible to allocated-memory metrics; and (iv)~an open harness that records the configuration, environment, and allocated, reserved, and driver-reported memory of every run.
 
 \section{Related work}
 \paragraph{Serving systems and batching.}
@@ -152,6 +154,86 @@ Beyond batch~32 the GPU becomes the bottleneck: latency grows roughly in proport
 For a latency target, the useful operating point on this hardware is therefore around batch~32; batch~64 buys about $27\%$ more throughput at a $58\%$ latency cost, and larger batches add little throughput.
 We did not profile the decode step, so the attribution of the flat regime to fixed per-step costs is an interpretation of the curve shape rather than a measured breakdown.
 
+\subsection{Model size and KV-cache allocation}
+\label{sec:models}
+To test whether the knee is a property of the GPU or of the model, we repeated the sweep with two larger members of the same family, SmolLM-360M and SmolLM-1.7B~\cite{allal2024smollm}, under the same settings.
+Table~\ref{tab:arch} lists their shapes; the two smaller models are deep and narrow and use grouped-query attention, while the 1.7B model has fewer, wider layers and full multi-head attention.
+Each configuration again ran twice, once in descending and once in ascending batch order; the two passes agreed within $1.5\%$ at every valid cell.
+These runs were made in a later session, after the workstation's power plan had been changed, so we also re-ran the 135M sweep in that session.
+It reproduced the earlier sweep within $1.1\%$ at every batch size up to 128 and was $4.5\%$ faster at batch~256; Table~\ref{tab:models} uses the re-run so that all three models share one session.
+Besides allocated memory, the harness now records PyTorch's reserved memory, the driver-reported memory in use, and the Windows shared-GPU-memory counter, which reveals allocations that the driver has placed in system RAM instead of failing.
+
+\begin{table}[!htbp]
+\centering
+\begin{tabular}{lrrrrr}
+\toprule
+Model & Layers & Hidden & Query heads & KV heads & BF16 weights \\
+\midrule
+SmolLM-135M & 30 & 576 & 9 & 3 & 0.27\,GB \\
+SmolLM-360M & 32 & 960 & 15 & 5 & 0.72\,GB \\
+SmolLM-1.7B & 24 & 2048 & 32 & 32 & 3.4\,GB \\
+\bottomrule
+\end{tabular}
+\caption{Architectures of the three models (from their published configurations).}
+\label{tab:arch}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{r *{8}{r}}
+\toprule
+ & \multicolumn{2}{c}{135M} & \multicolumn{2}{c}{360M} & \multicolumn{2}{c}{1.7B dyn.} & \multicolumn{2}{c}{1.7B static} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}\cmidrule(lr){8-9}
+Batch & ms & tok/s & ms & tok/s & ms & tok/s & ms & tok/s \\
+\midrule
+1 & 2308 & 55 & 2457 & 52 & 1379 & 93 & 1706 & 75 \\
+2 & 2332 & 110 & 2437 & 105 & 1514 & 169 & 1732 & 148 \\
+4 & 2365 & 216 & 2430 & 211 & 1614 & 317 & 1748 & 293 \\
+8 & 2330 & 440 & 2451 & 418 & 1801 & 569 & 1848 & 554 \\
+16 & 2341 & 875 & 2481 & 826 & 2233 & 917 & 2154 & 951 \\
+32 & 2333 & 1756 & 3504 & 1169 & 3232 & 1268 & 2751 & 1489 \\
+64 & 3680 & 2226 & 6301 & 1300 & \multicolumn{2}{c}{spilled$^\dagger$} & 4008 & 2044 \\
+128 & 6754 & 2426 & 11544 & 1419 & -- & -- & -- & -- \\
+256 & 12684 & 2583 & 22282 & 1471 & -- & -- & -- & -- \\
+\bottomrule
+\end{tabular}
+\caption{End-to-end latency and throughput across model sizes; ``dyn.'' is the default growing KV cache (BF16, eager, prompt 256, 128 new tokens; mean of two passes). $^\dagger$About 13\,GB was placed in system memory and latency rose to 35\,s; the cell is excluded. Dashes mark batch sizes that were not run because they cannot fit in 12\,GB.}
+\label{tab:models}
+\end{table}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{figs/model_size_sweep.pdf}
+\caption{Latency (left, log scale) and throughput (right) versus batch size for three model sizes. The dashed line is the 1.7B model with a static KV cache; the spilled 1.7B dynamic-cache cell at batch 64 is omitted.}
+\label{fig:models}
+\end{figure}
+
+\paragraph{The knee moves left as the model grows.}
+Latency for the 360M model stays between $2.43$ and $2.48$\,s through batch~16 and then rises to $3.50$\,s at batch~32, one doubling earlier than the 135M model.
+The 1.7B model has no flat region: relative to batch~1, latency is $17\%$ higher at batch~4, $31\%$ higher at batch~8, and $62\%$ higher at batch~16.
+The regime in which extra sequences are nearly free therefore shrinks with model size and has disappeared by 1.7B parameters on this GPU.
+
+\paragraph{Per-step latency does not follow parameter count.}
+At batch~1 the three models take $18.0$, $19.2$, and $10.8$\,ms per decode step respectively.
+The 360M model has $2.7\times$ the parameters of the 135M model but is only $6\%$ slower, and the 1.7B model, with $13\times$ the parameters, is $40\%$ faster.
+Per layer, the two smaller models take about $0.60$\,ms and the 1.7B model about $0.45$\,ms.
+Even for the 1.7B model, reading its $3.4$\,GB of weights at the card's rated $672$\,GB/s memory bandwidth would take about $5$\,ms, roughly half of the measured step.
+These numbers are consistent with small-batch decoding being limited by a per-layer cost that depends on layer structure rather than on weight bytes; the grouped-query attention path in the smaller models may contribute additional operations per layer.
+We have not profiled the step, so this remains an interpretation.
+The same pattern holds for throughput: the 360M model saturates at $1{,}471$ tok/s, below both the 135M model ($2{,}583$) and the 1.7B model with a static cache ($2{,}044$ at batch~64).
+
+\paragraph{KV-cache allocation and silent spilling.}
+The default cache in Transformers grows by one position per decode step.
+For the two smaller models, whose grouped-query caches are small, PyTorch's reserved memory never exceeds allocated memory by more than $18\%$ (at most about $0.2$\,GB).
+For the 1.7B model, whose full multi-head cache is about $75$\,MB per sequence at these lengths, the ratio of reserved to allocated memory grows from $1.06$ at batch~1 to $1.29$ at batch~16, $1.72$ at batch~32 ($9.7$ versus $5.6$\,GB), and $3.06$ at batch~64 ($24.4$ versus $8.0$\,GB).
+On Windows the driver satisfied the excess from system memory instead of raising an out-of-memory error: about $13$\,GB was placed in shared memory and the batch-64 cell took $35.1$\,s.
+Allocated-memory metrics alone would have reported this cell as a comfortable $8$\,GB run.
+PyTorch's expandable-segments allocator option, the usual remedy for fragmentation, is not supported on this platform, and garbage-collection thresholds did not prevent the spill in a preliminary test.
+Preallocating the cache for the full sequence (\texttt{cache\_implementation="static"}, run eagerly) removes the growth: batch~64 reserves $10.7$\,GB, runs in $4.0$\,s, and delivers $2{,}044$ tok/s, versus $1{,}268$ tok/s at batch~32, the largest batch the growing cache could run.
+The static cache is $24\%$ slower at batch~1, where attention runs over the full preallocated length, but $4\%$ faster at batch~16 and $15\%$ faster at batch~32.
+
 \subsection{Generation length}
 Figure~\ref{fig:gen} plots latency against generated token count for BF16 eager batch~1.
 Increasing generation length from 32 to 128 raised end-to-end latency by roughly $4\times$, while tokens-per-second stayed between $52$ and $54$ tok/s.
@@ -177,14 +259,15 @@ Thus \texttt{torch.compile} was approximately neutral on average for this model 
 \end{figure}
 
 \section{Discussion and limitations}
-These measurements characterize one GPU, one small model, and an end-to-end \texttt{generate()} timer.
+These measurements characterize one GPU, three models from a single family (with the factorial matrix on the smallest only), and an end-to-end \texttt{generate()} timer.
 They do not isolate time-to-first-token or inter-token latency, do not evaluate weight quantization or continuous batching under load, and do not claim optimality of any backend.
 The batch-size sweep uses a single configuration and reports its first, excluded pass openly; its two retained passes agreed closely, but results on a shared desktop workstation remain sensitive to host state.
-Within that scope, five conclusions are stable in the data: BF16 reduced latency vs.\ FP16; batching up to 32 raised throughput with no latency cost; beyond batch~32 latency grew roughly linearly while throughput saturated; generation length dominated wall time; and \texttt{torch.compile} did not provide a consistent speedup.
+The model-size comparison confounds parameter count with architecture (depth, width, and attention type), which is itself one of its findings, and a second GPU would be needed to separate properties of the models from properties of the RTX~5070.
+Within that scope, the following conclusions are stable in the data: BF16 reduced latency vs.\ FP16; for the 135M model, batching up to 32 raised throughput with no latency cost, and beyond batch~32 latency grew roughly linearly while throughput saturated; the batch size at which batching stops being free falls as the model grows; small-batch step time tracks layer structure more than parameter count; a growing KV cache can inflate reserved memory several-fold and spill silently on Windows, which a static cache avoids; generation length dominated wall time; and \texttt{torch.compile} did not provide a consistent speedup.
 
 \section{Conclusion}
 We measured a full 32-cell inference matrix and a batch-size sweep on an RTX~5070 using a reproducible harness.
-The sweep shows a clear latency--throughput knee near batch~32 for this model.
+The sweep shows a clear latency--throughput knee near batch~32 for the 135M model; the knee moves to batch~16 at 360M parameters and disappears at 1.7B, and for the largest model the choice of KV-cache implementation decides whether batch~64 fits on the device at all.
 The results emphasize workload- and precision-dependent behavior and caution against assuming that compilation alone improves short, small-model inference runs.
 A natural next step is to profile a decode step below and above the knee and to test CUDA Graphs, which remove per-step launch overhead and would therefore flatten the low-batch regime if our interpretation is correct.
 
