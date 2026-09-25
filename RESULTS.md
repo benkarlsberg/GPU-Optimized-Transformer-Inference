@@ -6,12 +6,12 @@
 
 | Field | Value |
 |-------|-------|
-| Host | BensPC |
+| Host | Single desktop workstation |
 | GPU | NVIDIA GeForce RTX 5070 (~12 GB) |
 | Driver | 610.62 |
 | CUDA (PyTorch) | 12.8 |
 | PyTorch | 2.11.0+cu128 |
-| OS | Windows 10 (build 26200) |
+| OS | Windows 11 (build 26200) |
 | Python | 3.11.15 |
 | Model | HuggingFaceTB/SmolLM-135M |
 
@@ -34,7 +34,7 @@ All **32/32** cells completed successfully.
 | Slowest E2E mean | **2855.3 ms** — fp16, batch 4, prompt 64, gen 128, eager (~180 tok/s, ~289 MB peak) |
 | BF16 vs FP16 | BF16 lower latency in **all 16** pairs; median BF16/FP16 = **0.895** |
 | `torch.compile` | Median eager/compile latency ratio **1.015** (mean 1.027; range 0.92–1.22) |
-| Batching | Batch 4 raises tok/s from ~40–50 to ~180–210 (fp16 eager) with similar wall-clock scale |
+| Batching | Batch 4 raises tok/s from ~41–49 to ~180–189 (fp16 eager) with similar wall-clock scale |
 | Gen length | g=32 → ~0.6–0.8 s; g=128 → ~2.3–2.9 s; tok/s stays relatively flat (decode-dominated) |
 
 Aggregated per-cell rows: `results/matrix_small_analysis.json`.
@@ -57,7 +57,7 @@ BF16, eager, prompt 256, 128 new tokens, 2 warmup + 5 measured iterations per ce
 | 256 | 13286 | 2467 | 3980 |
 
 - Batch 1–32: latency flat at ~2.3 s (~18 ms per decode step) while throughput rises ~31×.
-- Beyond 32: latency grows roughly linearly with batch size; throughput saturates at ~2,200–2,470 tok/s.
+- Beyond 32: latency grows roughly linearly with batch size; throughput rises only from ~2,220 tok/s (batch 64) to ~2,470 tok/s (batch 256).
 - Knee near batch 32 on this GPU for this model. Batch 64 gives ~27% more throughput for ~58% more latency.
 
 Aggregate: `results/batch_sweep_analysis.json` (`scripts/analyze_batch_sweep.py`). Figure: `paper/figs/latency_throughput_tradeoff.pdf` (`scripts/plot_tradeoff.py`).

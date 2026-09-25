@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import os
 import platform
-import socket
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -17,11 +16,25 @@ def _safe(cmd: list[str]) -> str | None:
         return None
 
 
+def _os_name() -> str:
+    """Human-readable OS name. platform.platform() reports Windows 11 as
+    "Windows-10" on older Python versions; Windows 11 builds start at 22000."""
+    system = platform.system()
+    if system == "Windows":
+        try:
+            build = int(platform.version().split(".")[-1])
+        except ValueError:
+            build = 0
+        release = "11" if build >= 22000 else platform.release()
+        return f"Windows {release} (build {build})"
+    return f"{system} {platform.release()}"
+
+
 def collect_environment() -> dict[str, Any]:
     info: dict[str, Any] = {
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-        "hostname": socket.gethostname(),
         "platform": platform.platform(),
+        "os": _os_name(),
         "python": sys.version,
         "executable": sys.executable,
         "cpu_count": os.cpu_count(),

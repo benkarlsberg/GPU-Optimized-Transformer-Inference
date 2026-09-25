@@ -24,10 +24,10 @@ On an NVIDIA GeForce RTX~5070, we measure synchronized end-to-end \texttt{genera
 All cells completed without out-of-memory failures.
 BF16 reduced end-to-end latency relative to FP16 in every paired comparison (median BF16/FP16 latency ratio $0.90$).
 Increasing batch size from 1 to 4 raised throughput by roughly $4\times$ while keeping wall-clock latency in a similar range.
-A follow-up batch-size sweep (1 to 256) locates the latency--throughput knee: latency stays near $2.3$\,s up to batch~32 while throughput rises about $31\times$, after which latency grows roughly linearly with batch size and throughput saturates near $2{,}400$ tok/s.
+A follow-up batch-size sweep (1 to 256) locates the latency--throughput knee: latency stays near $2.3$\,s up to batch~32 while throughput rises about $31\times$, after which latency grows roughly linearly with batch size and throughput levels off near $2{,}400$ tok/s.
 Generation length dominated end-to-end time, while tokens-per-second stayed comparatively flat, consistent with decode-bound behavior under this harness.
 \texttt{torch.compile} yielded a median eager/compile latency ratio of $1.02$ (range $0.92$--$1.22$), indicating little systematic gain for this model and measurement window.
-We release the harness, configurations, and aggregated results to support reproduction.
+We release the harness, configurations, and aggregated results at \url{https://github.com/benkarlsberg/GPU-Optimized-Transformer-Inference}.
 \end{abstract}
 
 \section{Introduction}
@@ -36,9 +36,34 @@ Practitioners must choose among these options without assuming that every optimi
 This paper reports a small, reproducible characterization on one consumer GPU using the open-source \texttt{goti} harness accompanying this work.
 Our goal is empirical clarity on a fixed model and hardware point---not a claim of state-of-the-art serving performance.
 
+Serving systems batch requests on the premise that small-batch decoding leaves the GPU underused~\cite{yu2022orca,kwon2023vllm,pope2023scaling}.
+How far batching stays free before latency rises depends on the model and the device, and is rarely reported for small models on consumer GPUs through the standard Hugging Face \texttt{generate()} path.
+Our contributions are (i)~a 32-cell factorial measurement of precision, batch size, prompt length, generation length, and \texttt{torch.compile} for a 135M-parameter model on an RTX~5070; (ii)~a batch-size sweep from 1 to 256 that locates the latency--throughput knee, with an explicit account of an excluded noisy pass; and (iii)~an open harness that records the configuration and environment of every run.
+
+\section{Related work}
+\paragraph{Serving systems and batching.}
+Orca~\cite{yu2022orca} introduced iteration-level scheduling so that new requests can join a running batch, and vLLM~\cite{kwon2023vllm} stores the KV cache in fixed-size pages so that more sequences fit in memory at once.
+Sarathi-Serve~\cite{agrawal2024sarathi} studies the throughput--latency tradeoff created when prefill and decode share a batch.
+Pope et al.~\cite{pope2023scaling} model inference cost as a function of batch size, memory bandwidth, and partitioning on TPUs, and DeepSpeed-Inference~\cite{aminabadi2022deepspeed} and FlexGen~\cite{sheng2023flexgen} target models too large for a single device or its memory.
+These systems motivate batching; our sweep measures where its benefit ends for a small model, using static batches rather than a serving engine.
+
+\paragraph{Kernels and attention.}
+FlashAttention~\cite{dao2022flashattention,dao2023flashattention2} reduces attention memory traffic by tiling the computation, and PyTorch's scaled-dot-product attention dispatches to fused kernels of this kind.
+Multi-query attention~\cite{shazeer2019fast} shrinks the KV cache read at every decode step.
+Our harness uses the stock attention path and does not modify kernels.
+
+\paragraph{Precision, quantization, and compilation.}
+FP16 mixed precision~\cite{micikevicius2018mixed} and BF16~\cite{kalamkar2019bfloat16} were introduced mainly for training speed and numerical range; their relative latency at inference on a given GPU is an empirical question that we measure directly.
+Weight quantization such as LLM.int8()~\cite{dettmers2022llmint8} and GPTQ~\cite{frantar2023gptq} further reduces memory traffic; we leave it to future work.
+\texttt{torch.compile}~\cite{ansel2024pytorch2} captures Python programs as graphs (TorchDynamo) and generates fused kernels (TorchInductor); we evaluate its default mode.
+
+\paragraph{Benchmarking methodology.}
+MLPerf Inference~\cite{reddi2020mlperf} standardizes inference measurement across systems, and the roofline model~\cite{williams2009roofline} relates achieved performance to compute and bandwidth limits.
+Our study is narrower: a controlled factor sweep on one consumer GPU, intended as a reproducible reference point rather than a benchmark suite.
+
 \section{Method}
 \subsection{Software stack}
-Experiments use PyTorch~\cite{paszke2019pytorch} with CUDA~12.8 bindings (\texttt{torch 2.11.0+cu128}), Hugging Face Transformers for model loading, and scaled-dot-product attention via PyTorch SDPA backends.
+Experiments use PyTorch~\cite{paszke2019pytorch} with CUDA~12.8 bindings (\texttt{torch 2.11.0+cu128}), Hugging Face Transformers~\cite{wolf2020transformers} for model loading, and scaled-dot-product attention via PyTorch SDPA backends.
 The workload is greedy \texttt{model.generate()} with KV caching enabled.
 Synthetic token ids form prompts so logging of decoded text cannot contaminate timed regions.
 
@@ -49,10 +74,10 @@ We report distributional summaries (mean, selected percentiles) rather than a si
 Cold-start model load is outside the measured loop; \texttt{torch.compile} configurations still include steady measured iterations after warmup, but compilation cost can affect short windows and is treated as part of the system under test.
 
 \subsection{Experimental matrix}
-Model: \texttt{HuggingFaceTB/SmolLM-135M}.
+Model: \texttt{HuggingFaceTB/SmolLM-135M}~\cite{allal2024smollm}, a 135M-parameter decoder-only language model.
 Factors: dtype $\in\{\mathrm{fp16},\mathrm{bf16}\}$, batch size $\in\{1,4\}$, prompt length $\in\{64,256\}$, max new tokens $\in\{32,128\}$, compile $\in\{\mathrm{false},\mathrm{true}\}$.
 This yields 32 cells.
-Hardware: NVIDIA GeForce RTX~5070 (driver 610.62, $\approx$12\,GB), host BensPC, Windows~10.
+Hardware: a single desktop workstation with an NVIDIA GeForce RTX~5070 ($\approx$12\,GB, NVIDIA 610-series driver) running Windows~11.
 
 \section{Results}
 All 32 cells completed with no OOM events.
@@ -73,7 +98,7 @@ The median BF16/FP16 latency ratio was $0.895$ (mean $0.890$).
 
 \subsection{Batching and throughput}
 Figure~\ref{fig:batch} shows tokens-per-second versus batch size for FP16 eager runs.
-Moving from batch~1 to batch~4 increased throughput from roughly $40$--$50$ tok/s to roughly $180$--$210$ tok/s.
+Moving from batch~1 to batch~4 increased throughput from $41$--$49$ tok/s to $180$--$189$ tok/s.
 End-to-end latency did not rise with batch size in this range: going from batch~1 to batch~4 raised throughput without a latency penalty.
 With only two batch sizes, however, the matrix cannot show where that stops, so we ran a dedicated sweep (Section~\ref{sec:sweep}).
 
@@ -123,13 +148,13 @@ Batch & Latency (ms) & Throughput (tok/s) & Peak memory (MB) \\
 Two regimes are visible.
 From batch~1 to batch~32, end-to-end latency stays between $2.30$ and $2.35$\,s (about $18$\,ms per decode step) while throughput rises from $56$ to $1{,}754$ tok/s.
 In this regime a decode step for this 135M-parameter model does not occupy the GPU, so per-step time is set by fixed costs that do not grow with batch size, and additional sequences are nearly free.
-Beyond batch~32 the GPU becomes the bottleneck: latency grows roughly in proportion to batch size ($3.7$\,s at 64, $6.8$\,s at 128, $13.3$\,s at 256) while throughput saturates between $2{,}200$ and $2{,}470$ tok/s.
+Beyond batch~32 the GPU becomes the bottleneck: latency grows roughly in proportion to batch size ($3.7$\,s at 64, $6.8$\,s at 128, $13.3$\,s at 256) while throughput rises only from $2{,}222$ tok/s at batch~64 to $2{,}467$ tok/s at batch~256.
 For a latency target, the useful operating point on this hardware is therefore around batch~32; batch~64 buys about $27\%$ more throughput at a $58\%$ latency cost, and larger batches add little throughput.
 We did not profile the decode step, so the attribution of the flat regime to fixed per-step costs is an interpretation of the curve shape rather than a measured breakdown.
 
 \subsection{Generation length}
 Figure~\ref{fig:gen} plots latency against generated token count for BF16 eager batch~1.
-Increasing generation length from 32 to 128 raised end-to-end latency by roughly $4\times$, while tokens-per-second remained near $50$--$55$ tok/s.
+Increasing generation length from 32 to 128 raised end-to-end latency by roughly $4\times$, while tokens-per-second stayed between $52$ and $54$ tok/s.
 Under this harness, wall-clock time tracks decode length more strongly than the modest prompt-length change ($64$ vs.\ $256$).
 
 \begin{figure}[!htbp]
@@ -161,10 +186,13 @@ Within that scope, five conclusions are stable in the data: BF16 reduced latency
 We measured a full 32-cell inference matrix and a batch-size sweep on an RTX~5070 using a reproducible harness.
 The sweep shows a clear latency--throughput knee near batch~32 for this model.
 The results emphasize workload- and precision-dependent behavior and caution against assuming that compilation alone improves short, small-model inference runs.
-Code and aggregated artifacts are available in the accompanying repository.
+A natural next step is to profile a decode step below and above the knee and to test CUDA Graphs, which remove per-step launch overhead and would therefore flatten the low-batch regime if our interpretation is correct.
+
+\section*{Code and data availability}
+The harness, configurations, analysis scripts, and aggregated results are available at \url{https://github.com/benkarlsberg/GPU-Optimized-Transformer-Inference}.
 
 \bibliographystyle{plain}
-\begin{thebibliography}{9}
+\begin{thebibliography}{99}
 
 \bibitem{vaswani2017attention}
 A.~Vaswani, N.~Shazeer, N.~Parmar, J.~Uszkoreit, L.~Jones, A.~N. Gomez, \L.~Kaiser, and I.~Polosukhin.
@@ -175,6 +203,96 @@ A.~Vaswani, N.~Shazeer, N.~Parmar, J.~Uszkoreit, L.~Jones, A.~N. Gomez, \L.~Kais
 A.~Paszke, S.~Gross, F.~Massa, A.~Lerer, J.~Bradbury, G.~Chanan, T.~Killeen, Z.~Lin, N.~Gimelshein, L.~Antiga, A.~Desmaison, A.~Kopf, E.~Yang, Z.~DeVito, M.~Raison, A.~Tejani, S.~Chilamkurthy, B.~Steiner, L.~Fang, J.~Bai, and S.~Chintala.
 \newblock PyTorch: An imperative style, high-performance deep learning library.
 \newblock In {\em Advances in Neural Information Processing Systems}, volume~32, pages 8024--8035, 2019.
+
+\bibitem{agrawal2024sarathi}
+A.~Agrawal, N.~Kedia, A.~Panwar, J.~Mohan, N.~Kwatra, B.~S. Gulavani, A.~Tumanov, and R.~Ramjee.
+\newblock Taming throughput-latency tradeoff in {LLM} inference with {Sarathi-Serve}.
+\newblock In {\em 18th USENIX Symposium on Operating Systems Design and Implementation (OSDI)}, 2024.
+
+\bibitem{allal2024smollm}
+L.~Ben~Allal, A.~Lozhkov, E.~Bakouch, L.~von Werra, and T.~Wolf.
+\newblock {SmolLM}: Blazingly fast and remarkably powerful.
+\newblock Hugging Face blog, \url{https://huggingface.co/blog/smollm}, 2024.
+
+\bibitem{aminabadi2022deepspeed}
+R.~Y. Aminabadi, S.~Rajbhandari, A.~A. Awan, C.~Li, D.~Li, E.~Zheng, O.~Ruwase, S.~Smith, M.~Zhang, J.~Rasley, and Y.~He.
+\newblock {DeepSpeed-Inference}: Enabling efficient inference of transformer models at unprecedented scale.
+\newblock In {\em SC22: International Conference for High Performance Computing, Networking, Storage and Analysis}, 2022.
+
+\bibitem{ansel2024pytorch2}
+J.~Ansel et~al.
+\newblock {PyTorch 2}: Faster machine learning through dynamic {Python} bytecode transformation and graph compilation.
+\newblock In {\em Proceedings of the 29th ACM International Conference on Architectural Support for Programming Languages and Operating Systems (ASPLOS)}, 2024.
+
+\bibitem{dao2023flashattention2}
+T.~Dao.
+\newblock {FlashAttention-2}: Faster attention with better parallelism and work partitioning.
+\newblock In {\em International Conference on Learning Representations (ICLR)}, 2024.
+
+\bibitem{dao2022flashattention}
+T.~Dao, D.~Y. Fu, S.~Ermon, A.~Rudra, and C.~R{\'e}.
+\newblock {FlashAttention}: Fast and memory-efficient exact attention with {IO}-awareness.
+\newblock In {\em Advances in Neural Information Processing Systems}, volume~35, 2022.
+
+\bibitem{dettmers2022llmint8}
+T.~Dettmers, M.~Lewis, Y.~Belkada, and L.~Zettlemoyer.
+\newblock {LLM.int8()}: 8-bit matrix multiplication for transformers at scale.
+\newblock In {\em Advances in Neural Information Processing Systems}, volume~35, 2022.
+
+\bibitem{frantar2023gptq}
+E.~Frantar, S.~Ashkboos, T.~Hoefler, and D.~Alistarh.
+\newblock {GPTQ}: Accurate post-training quantization for generative pre-trained transformers.
+\newblock In {\em International Conference on Learning Representations (ICLR)}, 2023.
+
+\bibitem{kalamkar2019bfloat16}
+D.~Kalamkar et~al.
+\newblock A study of {BFLOAT16} for deep learning training.
+\newblock arXiv:1905.12322, 2019.
+
+\bibitem{kwon2023vllm}
+W.~Kwon, Z.~Li, S.~Zhuang, Y.~Sheng, L.~Zheng, C.~H. Yu, J.~E. Gonzalez, H.~Zhang, and I.~Stoica.
+\newblock Efficient memory management for large language model serving with {PagedAttention}.
+\newblock In {\em Proceedings of the 29th Symposium on Operating Systems Principles (SOSP)}, 2023.
+
+\bibitem{micikevicius2018mixed}
+P.~Micikevicius, S.~Narang, J.~Alben, G.~Diamos, E.~Elsen, D.~Garcia, B.~Ginsburg, M.~Houston, O.~Kuchaiev, G.~Venkatesh, and H.~Wu.
+\newblock Mixed precision training.
+\newblock In {\em International Conference on Learning Representations (ICLR)}, 2018.
+
+\bibitem{pope2023scaling}
+R.~Pope, S.~Douglas, A.~Chowdhery, J.~Devlin, J.~Bradbury, J.~Heek, K.~Xiao, S.~Agrawal, and J.~Dean.
+\newblock Efficiently scaling transformer inference.
+\newblock In {\em Proceedings of Machine Learning and Systems (MLSys)}, volume~5, 2023.
+
+\bibitem{reddi2020mlperf}
+V.~J. Reddi et~al.
+\newblock {MLPerf} inference benchmark.
+\newblock In {\em ACM/IEEE 47th Annual International Symposium on Computer Architecture (ISCA)}, 2020.
+
+\bibitem{shazeer2019fast}
+N.~Shazeer.
+\newblock Fast transformer decoding: One write-head is all you need.
+\newblock arXiv:1911.02150, 2019.
+
+\bibitem{sheng2023flexgen}
+Y.~Sheng, L.~Zheng, B.~Yuan, Z.~Li, M.~Ryabinin, B.~Chen, P.~Liang, C.~R{\'e}, I.~Stoica, and C.~Zhang.
+\newblock {FlexGen}: High-throughput generative inference of large language models with a single {GPU}.
+\newblock In {\em Proceedings of the 40th International Conference on Machine Learning (ICML)}, 2023.
+
+\bibitem{williams2009roofline}
+S.~Williams, A.~Waterman, and D.~Patterson.
+\newblock Roofline: An insightful visual performance model for multicore architectures.
+\newblock {\em Communications of the ACM}, 52(4):65--76, 2009.
+
+\bibitem{wolf2020transformers}
+T.~Wolf et~al.
+\newblock Transformers: State-of-the-art natural language processing.
+\newblock In {\em Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing: System Demonstrations}, pages 38--45, 2020.
+
+\bibitem{yu2022orca}
+G.-I. Yu, J.~S. Jeong, G.-W. Kim, S.~Kim, and B.-G. Chun.
+\newblock {Orca}: A distributed serving system for transformer-based generative models.
+\newblock In {\em 16th USENIX Symposium on Operating Systems Design and Implementation (OSDI)}, 2022.
 
 \end{thebibliography}
 

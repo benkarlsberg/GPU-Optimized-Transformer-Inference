@@ -1,6 +1,5 @@
 {
   "env": {
-    "hostname": "BensPC",
     "platform": "Windows-10-10.0.26200-SP0",
     "torch": {
       "version": "2.11.0+cu128",
@@ -15,7 +14,8 @@
         "multi_processor_count": 48
       }
     },
-    "nvidia_smi": "NVIDIA GeForce RTX 5070, 610.62, 12227 MiB"
+    "nvidia_smi": "NVIDIA GeForce RTX 5070, 610.62, 12227 MiB",
+    "os": "Windows 11 (build 26200)"
   },
   "smoke_gpu": {
     "config": {
