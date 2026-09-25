@@ -24,7 +24,7 @@ On an NVIDIA GeForce RTX~5070, we measure synchronized end-to-end \texttt{genera
 All cells completed without out-of-memory failures.
 BF16 reduced end-to-end latency relative to FP16 in every paired comparison (median BF16/FP16 latency ratio $0.90$).
 Increasing batch size from 1 to 4 raised throughput by roughly $4\times$ while keeping wall-clock latency in a similar range.
-A follow-up batch-size sweep (1 to 256) locates the latency--throughput knee: latency stays near $2.3$\,s up to batch~32 while throughput rises about $31\times$, after which latency grows roughly linearly with batch size and throughput levels off near $2{,}400$ tok/s.
+A follow-up batch-size sweep (1 to 256) locates the latency--throughput knee: latency stays near $2.3$\,s up to batch~32 while throughput rises about $31\times$, after which latency grows roughly linearly with batch size and throughput rises only from $2{,}222$ tok/s at batch~64 to $2{,}467$ tok/s at batch~256.
 Repeating the sweep on 360M- and 1.7B-parameter models from the same family shows the knee moving to smaller batches as the model grows (batch~16 for 360M; no flat region for 1.7B), and shows that per-token latency at batch~1 does not follow parameter count: the 1.7B model decodes about $40\%$ faster per step than the 135M model.
 For the 1.7B model, the default growing KV cache fragments PyTorch's allocator enough that batch~64 reserves $24$\,GB for $8$\,GB of live data and silently spills into system memory; a preallocated static cache avoids this and reaches $2{,}044$ tok/s.
 Generation length dominated end-to-end time, while tokens-per-second stayed comparatively flat, consistent with decode-bound behavior under this harness.
