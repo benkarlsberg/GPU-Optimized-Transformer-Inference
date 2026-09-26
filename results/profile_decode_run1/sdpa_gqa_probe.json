@@ -1,0 +1,511 @@
+{
+ "environment": {
+  "python": "3.11.15",
+  "os": "Windows 11 (build 26200)",
+  "torch": "2.11.0+cu128",
+  "torch_cuda": "12.8",
+  "cudnn": 91900,
+  "transformers": "5.17.0",
+  "gpu": "NVIDIA GeForce RTX 5070",
+  "sm": "12.0",
+  "gpu_memory_bytes": 12820480000,
+  "driver": "610.88"
+ },
+ "config": {
+  "kv_len": "300",
+  "batches": "1,32",
+  "prompt_length": "256",
+  "steps": "32",
+  "model_cells": "HuggingFaceTB/SmolLM-135M:1,32;HuggingFaceTB/SmolLM-360M:1,16",
+  "passes": "2",
+  "out_dir": "results\\profile_decode"
+ },
+ "operator_level": [
+  {
+   "model": "SmolLM-135M",
+   "batch": 1,
+   "kv_len": 300,
+   "gqa": true,
+   "backends": {
+    "flash": {
+     "ok": false,
+     "reasons": [
+      "Memory efficient kernel not used because: (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:986.)",
+      "Memory Efficient attention has been runtime disabled. (Triggered internally at aten/src/ATen/native/transformers/sdp_utils_cpp.h:552.)",
+      "Flash attention kernel not used because: (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:988.)",
+      "Torch was not compiled with flash attention. (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:797.)",
+      "cuDNN attention kernel not used because: (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:990.)",
+      "cuDNN attention has been runtime disabled. (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:706.)"
+     ]
+    },
+    "efficient": {
+     "ok": false,
+     "reasons": [
+      "Memory efficient kernel not used because: (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:986.)",
+      "For dense input, both fused kernels require query, key and value to have the same num_heads. Query.sizes(): [1, 9, 1, 64], Key sizes(): [1, 3, 300, 64], Value sizes(): [1, 3, 300, 64] instead. To broa",
+      "Flash attention kernel not used because: (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:988.)",
+      "Torch was not compiled with flash attention. (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:797.)",
+      "cuDNN attention kernel not used because: (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:990.)",
+      "cuDNN attention has been runtime disabled. (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:706.)"
+     ]
+    },
+    "cudnn": {
+     "ok": true
+    },
+    "math": {
+     "ok": true
+    }
+   },
+   "default": {
+    "kernels_per_call": 16.0,
+    "host_us": 178.73050004709512,
+    "pipelined_us": 178.88100002892315,
+    "synced_us": 168.99988986551762
+   },
+   "repeat_kv_then_sdpa": {
+    "kernels_per_call": 3.0,
+    "host_us": 33.5579999955371,
+    "pipelined_us": 33.6459995014593,
+    "synced_us": 48.099958803504705
+   }
+  },
+  {
+   "model": "SmolLM-135M",
+   "batch": 32,
+   "kv_len": 300,
+   "gqa": true,
+   "backends": {
+    "flash": {
+     "ok": false,
+     "reasons": [
+      "Memory efficient kernel not used because: (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:986.)",
+      "Memory Efficient attention has been runtime disabled. (Triggered internally at aten/src/ATen/native/transformers/sdp_utils_cpp.h:552.)",
+      "Flash attention kernel not used because: (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:988.)",
+      "Torch was not compiled with flash attention. (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:797.)",
+      "cuDNN attention kernel not used because: (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:990.)",
+      "cuDNN attention has been runtime disabled. (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:706.)"
+     ]
+    },
+    "efficient": {
+     "ok": false,
+     "reasons": [
+      "Memory efficient kernel not used because: (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:986.)",
+      "For dense input, both fused kernels require query, key and value to have the same num_heads. Query.sizes(): [32, 9, 1, 64], Key sizes(): [32, 3, 300, 64], Value sizes(): [32, 3, 300, 64] instead. To b",
+      "Flash attention kernel not used because: (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:988.)",
+      "Torch was not compiled with flash attention. (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:797.)",
+      "cuDNN attention kernel not used because: (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:990.)",
+      "cuDNN attention has been runtime disabled. (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:706.)"
+     ]
+    },
+    "cudnn": {
+     "ok": true
+    },
+    "math": {
+     "ok": true
+    }
+   },
+   "default": {
+    "kernels_per_call": 16.0,
+    "host_us": 210.57099977042526,
+    "pipelined_us": 280.3909999784082,
+    "synced_us": 293.3000214397907
+   },
+   "repeat_kv_then_sdpa": {
+    "kernels_per_call": 3.0,
+    "host_us": 31.462499755434692,
+    "pipelined_us": 102.70299972034991,
+    "synced_us": 115.24994624778628
+   }
+  },
+  {
+   "model": "SmolLM-360M",
+   "batch": 1,
+   "kv_len": 300,
+   "gqa": true,
+   "backends": {
+    "flash": {
+     "ok": false,
+     "reasons": [
+      "Memory efficient kernel not used because: (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:986.)",
+      "Memory Efficient attention has been runtime disabled. (Triggered internally at aten/src/ATen/native/transformers/sdp_utils_cpp.h:552.)",
+      "Flash attention kernel not used because: (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:988.)",
+      "Torch was not compiled with flash attention. (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:797.)",
+      "cuDNN attention kernel not used because: (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:990.)",
+      "cuDNN attention has been runtime disabled. (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:706.)"
+     ]
+    },
+    "efficient": {
+     "ok": false,
+     "reasons": [
+      "Memory efficient kernel not used because: (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:986.)",
+      "For dense input, both fused kernels require query, key and value to have the same num_heads. Query.sizes(): [1, 15, 1, 64], Key sizes(): [1, 5, 300, 64], Value sizes(): [1, 5, 300, 64] instead. To bro",
+      "Flash attention kernel not used because: (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:988.)",
+      "Torch was not compiled with flash attention. (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:797.)",
+      "cuDNN attention kernel not used because: (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:990.)",
+      "cuDNN attention has been runtime disabled. (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:706.)"
+     ]
+    },
+    "cudnn": {
+     "ok": true
+    },
+    "math": {
+     "ok": true
+    }
+   },
+   "default": {
+    "kernels_per_call": 16.0,
+    "host_us": 158.45099987927824,
+    "pipelined_us": 158.55600009672344,
+    "synced_us": 161.94995259866118
+   },
+   "repeat_kv_then_sdpa": {
+    "kernels_per_call": 3.0,
+    "host_us": 31.667499570176005,
+    "pipelined_us": 31.749499612487853,
+    "synced_us": 47.799956519156694
+   }
+  },
+  {
+   "model": "SmolLM-360M",
+   "batch": 32,
+   "kv_len": 300,
+   "gqa": true,
+   "backends": {
+    "flash": {
+     "ok": false,
+     "reasons": [
+      "Memory efficient kernel not used because: (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:986.)",
+      "Memory Efficient attention has been runtime disabled. (Triggered internally at aten/src/ATen/native/transformers/sdp_utils_cpp.h:552.)",
+      "Flash attention kernel not used because: (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:988.)",
+      "Torch was not compiled with flash attention. (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:797.)",
+      "cuDNN attention kernel not used because: (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:990.)",
+      "cuDNN attention has been runtime disabled. (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:706.)"
+     ]
+    },
+    "efficient": {
+     "ok": false,
+     "reasons": [
+      "Memory efficient kernel not used because: (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:986.)",
+      "For dense input, both fused kernels require query, key and value to have the same num_heads. Query.sizes(): [32, 15, 1, 64], Key sizes(): [32, 5, 300, 64], Value sizes(): [32, 5, 300, 64] instead. To ",
+      "Flash attention kernel not used because: (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:988.)",
+      "Torch was not compiled with flash attention. (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:797.)",
+      "cuDNN attention kernel not used because: (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:990.)",
+      "cuDNN attention has been runtime disabled. (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:706.)"
+     ]
+    },
+    "cudnn": {
+     "ok": true
+    },
+    "math": {
+     "ok": true
+    }
+   },
+   "default": {
+    "kernels_per_call": 16.0,
+    "host_us": 343.7900001881644,
+    "pipelined_us": 483.77999977674335,
+    "synced_us": 496.9000583514571
+   },
+   "repeat_kv_then_sdpa": {
+    "kernels_per_call": 3.0,
+    "host_us": 31.90099960193038,
+    "pipelined_us": 166.17099987342954,
+    "synced_us": 177.10006795823574
+   }
+  },
+  {
+   "model": "SmolLM-1.7B",
+   "batch": 1,
+   "kv_len": 300,
+   "gqa": false,
+   "backends": {
+    "flash": {
+     "ok": false,
+     "reasons": [
+      "Memory efficient kernel not used because: (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:986.)",
+      "Memory Efficient attention has been runtime disabled. (Triggered internally at aten/src/ATen/native/transformers/sdp_utils_cpp.h:552.)",
+      "Flash attention kernel not used because: (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:988.)",
+      "Torch was not compiled with flash attention. (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:797.)",
+      "cuDNN attention kernel not used because: (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:990.)",
+      "cuDNN attention has been runtime disabled. (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:706.)"
+     ]
+    },
+    "efficient": {
+     "ok": true
+    },
+    "cudnn": {
+     "ok": true
+    },
+    "math": {
+     "ok": true
+    }
+   },
+   "default": {
+    "kernels_per_call": 1.0,
+    "host_us": 17.82100007403642,
+    "pipelined_us": 18.054500105790794,
+    "synced_us": 30.700000934302807
+   }
+  },
+  {
+   "model": "SmolLM-1.7B",
+   "batch": 32,
+   "kv_len": 300,
+   "gqa": false,
+   "backends": {
+    "flash": {
+     "ok": false,
+     "reasons": [
+      "Memory efficient kernel not used because: (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:986.)",
+      "Memory Efficient attention has been runtime disabled. (Triggered internally at aten/src/ATen/native/transformers/sdp_utils_cpp.h:552.)",
+      "Flash attention kernel not used because: (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:988.)",
+      "Torch was not compiled with flash attention. (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:797.)",
+      "cuDNN attention kernel not used because: (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:990.)",
+      "cuDNN attention has been runtime disabled. (Triggered internally at aten/src/ATen/native/transformers/cuda/sdp_utils.cpp:706.)"
+     ]
+    },
+    "efficient": {
+     "ok": true
+    },
+    "cudnn": {
+     "ok": true
+    },
+    "math": {
+     "ok": true
+    }
+   },
+   "default": {
+    "kernels_per_call": 1.0,
+    "host_us": 11.18350017350167,
+    "pipelined_us": 176.7014997312799,
+    "synced_us": 188.89998318627477
+   }
+  }
+ ],
+ "model_level": [
+  {
+   "model": "HuggingFaceTB/SmolLM-135M",
+   "batch": 1,
+   "gqa_fast_path": true,
+   "wall_step_ms": 20.540650002658367,
+   "dispatch_step_ms": 20.550053126498824,
+   "kernels_per_step": 1680.0,
+   "kernels_per_layer": 55.0,
+   "gpu_busy_step_ms": 2.715494140625,
+   "gpu_us_per_layer": 86.10340169270833,
+   "top_ops_per_layer": 54.0,
+   "sdpa_kernels_layer0": 16,
+   "pass": 1
+  },
+  {
+   "model": "HuggingFaceTB/SmolLM-135M",
+   "batch": 1,
+   "gqa_fast_path": false,
+   "wall_step_ms": 16.5362999541685,
+   "dispatch_step_ms": 16.548553125176113,
+   "kernels_per_step": 1290.0,
+   "kernels_per_layer": 42.0,
+   "gpu_busy_step_ms": 2.59722021484375,
+   "gpu_us_per_layer": 82.145556640625,
+   "top_ops_per_layer": 60.0,
+   "sdpa_kernels_layer0": 1,
+   "pass": 1
+  },
+  {
+   "model": "HuggingFaceTB/SmolLM-135M",
+   "batch": 32,
+   "gqa_fast_path": true,
+   "wall_step_ms": 20.421699970029294,
+   "dispatch_step_ms": 20.81010624897317,
+   "kernels_per_step": 1680.0,
+   "kernels_per_layer": 55.0,
+   "gpu_busy_step_ms": 8.35303369140625,
+   "gpu_us_per_layer": 273.537744140625,
+   "top_ops_per_layer": 54.0,
+   "sdpa_kernels_layer0": 16,
+   "pass": 1
+  },
+  {
+   "model": "HuggingFaceTB/SmolLM-135M",
+   "batch": 32,
+   "gqa_fast_path": false,
+   "wall_step_ms": 16.565649944823235,
+   "dispatch_step_ms": 17.0112593768863,
+   "kernels_per_step": 1290.0,
+   "kernels_per_layer": 42.0,
+   "gpu_busy_step_ms": 5.5254287109375,
+   "gpu_us_per_layer": 179.30185546875,
+   "top_ops_per_layer": 60.0,
+   "sdpa_kernels_layer0": 1,
+   "pass": 1
+  },
+  {
+   "model": "HuggingFaceTB/SmolLM-360M",
+   "batch": 1,
+   "gqa_fast_path": true,
+   "wall_step_ms": 22.662199975457042,
+   "dispatch_step_ms": 22.74815937198582,
+   "kernels_per_step": 1790.0,
+   "kernels_per_layer": 55.0,
+   "gpu_busy_step_ms": 4.17736328125,
+   "gpu_us_per_layer": 122.64572143554688,
+   "top_ops_per_layer": 54.0,
+   "sdpa_kernels_layer0": 16,
+   "pass": 1
+  },
+  {
+   "model": "HuggingFaceTB/SmolLM-360M",
+   "batch": 1,
+   "gqa_fast_path": false,
+   "wall_step_ms": 17.9274000111036,
+   "dispatch_step_ms": 17.732237502059434,
+   "kernels_per_step": 1374.0,
+   "kernels_per_layer": 42.0,
+   "gpu_busy_step_ms": 3.91101611328125,
+   "gpu_us_per_layer": 114.30259704589844,
+   "top_ops_per_layer": 60.0,
+   "sdpa_kernels_layer0": 1,
+   "pass": 1
+  },
+  {
+   "model": "HuggingFaceTB/SmolLM-360M",
+   "batch": 16,
+   "gqa_fast_path": true,
+   "wall_step_ms": 21.892649994697422,
+   "dispatch_step_ms": 21.86819062626455,
+   "kernels_per_step": 1790.0,
+   "kernels_per_layer": 55.0,
+   "gpu_busy_step_ms": 7.844341796875,
+   "gpu_us_per_layer": 238.5999298095703,
+   "top_ops_per_layer": 54.0,
+   "sdpa_kernels_layer0": 16,
+   "pass": 1
+  },
+  {
+   "model": "HuggingFaceTB/SmolLM-360M",
+   "batch": 16,
+   "gqa_fast_path": false,
+   "wall_step_ms": 17.332149960566312,
+   "dispatch_step_ms": 17.302003125223564,
+   "kernels_per_step": 1374.0,
+   "kernels_per_layer": 42.0,
+   "gpu_busy_step_ms": 6.27360986328125,
+   "gpu_us_per_layer": 189.50904846191406,
+   "top_ops_per_layer": 60.0,
+   "sdpa_kernels_layer0": 1,
+   "pass": 1
+  },
+  {
+   "model": "HuggingFaceTB/SmolLM-135M",
+   "batch": 1,
+   "gqa_fast_path": true,
+   "wall_step_ms": 20.638749934732914,
+   "dispatch_step_ms": 20.649762500397628,
+   "kernels_per_step": 1680.0,
+   "kernels_per_layer": 55.0,
+   "gpu_busy_step_ms": 2.71295166015625,
+   "gpu_us_per_layer": 85.996044921875,
+   "top_ops_per_layer": 54.0,
+   "sdpa_kernels_layer0": 16,
+   "pass": 2
+  },
+  {
+   "model": "HuggingFaceTB/SmolLM-135M",
+   "batch": 1,
+   "gqa_fast_path": false,
+   "wall_step_ms": 16.340250032953918,
+   "dispatch_step_ms": 16.530912500456907,
+   "kernels_per_step": 1290.0,
+   "kernels_per_layer": 42.0,
+   "gpu_busy_step_ms": 2.5944208984375,
+   "gpu_us_per_layer": 82.06241861979167,
+   "top_ops_per_layer": 60.0,
+   "sdpa_kernels_layer0": 1,
+   "pass": 2
+  },
+  {
+   "model": "HuggingFaceTB/SmolLM-135M",
+   "batch": 32,
+   "gqa_fast_path": true,
+   "wall_step_ms": 20.337949972599745,
+   "dispatch_step_ms": 21.971534373733448,
+   "kernels_per_step": 1680.0,
+   "kernels_per_layer": 55.0,
+   "gpu_busy_step_ms": 8.36910302734375,
+   "gpu_us_per_layer": 274.070556640625,
+   "top_ops_per_layer": 54.0,
+   "sdpa_kernels_layer0": 16,
+   "pass": 2
+  },
+  {
+   "model": "HuggingFaceTB/SmolLM-135M",
+   "batch": 32,
+   "gqa_fast_path": false,
+   "wall_step_ms": 16.539499920327216,
+   "dispatch_step_ms": 16.47629999933997,
+   "kernels_per_step": 1290.0,
+   "kernels_per_layer": 42.0,
+   "gpu_busy_step_ms": 5.525994140625,
+   "gpu_us_per_layer": 179.31583658854166,
+   "top_ops_per_layer": 60.0,
+   "sdpa_kernels_layer0": 1,
+   "pass": 2
+  },
+  {
+   "model": "HuggingFaceTB/SmolLM-360M",
+   "batch": 1,
+   "gqa_fast_path": true,
+   "wall_step_ms": 22.368300007656217,
+   "dispatch_step_ms": 22.66126562608406,
+   "kernels_per_step": 1790.0,
+   "kernels_per_layer": 55.0,
+   "gpu_busy_step_ms": 4.16136083984375,
+   "gpu_us_per_layer": 122.16816711425781,
+   "top_ops_per_layer": 54.0,
+   "sdpa_kernels_layer0": 16,
+   "pass": 2
+  },
+  {
+   "model": "HuggingFaceTB/SmolLM-360M",
+   "batch": 1,
+   "gqa_fast_path": false,
+   "wall_step_ms": 17.705700010992587,
+   "dispatch_step_ms": 18.75177187321242,
+   "kernels_per_step": 1374.0,
+   "kernels_per_layer": 42.0,
+   "gpu_busy_step_ms": 3.9284677734375,
+   "gpu_us_per_layer": 114.84017944335938,
+   "top_ops_per_layer": 60.0,
+   "sdpa_kernels_layer0": 1,
+   "pass": 2
+  },
+  {
+   "model": "HuggingFaceTB/SmolLM-360M",
+   "batch": 16,
+   "gqa_fast_path": true,
+   "wall_step_ms": 21.815700049046427,
+   "dispatch_step_ms": 22.5895687508455,
+   "kernels_per_step": 1790.0,
+   "kernels_per_layer": 55.0,
+   "gpu_busy_step_ms": 7.82448828125,
+   "gpu_us_per_layer": 237.98789978027344,
+   "top_ops_per_layer": 54.0,
+   "sdpa_kernels_layer0": 16,
+   "pass": 2
+  },
+  {
+   "model": "HuggingFaceTB/SmolLM-360M",
+   "batch": 16,
+   "gqa_fast_path": false,
+   "wall_step_ms": 17.378699965775013,
+   "dispatch_step_ms": 17.34723437402863,
+   "kernels_per_step": 1374.0,
+   "kernels_per_layer": 42.0,
+   "gpu_busy_step_ms": 6.29084814453125,
+   "gpu_us_per_layer": 190.03721618652344,
+   "top_ops_per_layer": 60.0,
+   "sdpa_kernels_layer0": 1,
+   "pass": 2
+  }
+ ]
+}

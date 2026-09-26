@@ -34,6 +34,6 @@ paper/*.out
 paper/*.log
 results/runs_*/
 
-# decode-step profiling: traces and superseded runs stay local
+# decode-step profiling: Chrome traces stay local
 results/profile_decode/traces/
-results/profile_decode_run1/
+results/profile_decode_run1/traces/

@@ -23,7 +23,7 @@ We present a controlled single-GPU study of decoder-only transformer inference w
 For the 135M model, we measure synchronized end-to-end \texttt{generate()} latency and tokens-per-second across a 32-cell matrix spanning data type (FP16, BF16), batch size (1, 4), prompt length (64, 256), generation length (32, 128), and execution mode (eager vs.\ \texttt{torch.compile}).
 BF16 reduced latency relative to FP16 in every paired comparison (median latency ratio $0.90$).
 A batch-size sweep (1 to 256) locates the latency--throughput knee: latency stays near $2.3$\,s up to batch~32 while throughput rises about $31\times$, after which latency grows roughly linearly with batch size and throughput rises only from $2{,}222$ tok/s at batch~64 to $2{,}467$ tok/s at batch~256.
-Repeating the sweep on the 360M and 1.7B models shows the knee moving to smaller batches as the model grows (batch~16 for 360M; no flat region for 1.7B), and that per-token latency at batch~1 does not follow parameter count: the 1.7B model decodes about $40\%$ faster per step than the 135M model.
+Repeating the sweep on the 360M and 1.7B models shows the knee moving to smaller batches as the model grows (batch~16 for 360M; no flat region for 1.7B), and that per-token latency at batch~1 does not follow parameter count: the 1.7B model takes about $40\%$ less time per decode step than the 135M model.
 Decode-step profiling explains this: at batch~1 the GPU is idle $39$--$87\%$ of each step while the host issues $990$--$1{,}790$ kernels, and on this Windows PyTorch build, which lacks FlashAttention, grouped-query attention in the smaller models falls back to a math path costing about a fifth of their step time.
 For the 1.7B model, the default growing KV cache fragments PyTorch's allocator enough that batch~64 reserves $24$\,GB for $8$\,GB of live data, and the Windows driver's default system-memory fallback moves the excess into host memory; a preallocated static cache avoids this and reaches $2{,}044$ tok/s.
 Generation length dominated end-to-end time.
@@ -164,8 +164,8 @@ Profiling (Section~\ref{sec:profile}) supports this reading; beyond the knee the
 To test whether the knee is a property of the GPU or of the model, we repeated the sweep with two larger members of the same family, SmolLM-360M and SmolLM-1.7B~\cite{allal2024smollm}, under the same settings.
 Table~\ref{tab:arch} lists their shapes; the two smaller models are deep and narrow and use grouped-query attention~\cite{ainslie2023gqa}, while the 1.7B model has fewer, wider layers and full multi-head attention.
 Each configuration again ran twice, once in descending and once in ascending batch order; the two passes agreed to within about $1.5\%$ at every valid cell.
-These runs were made in a later session, after the workstation's power plan had been changed, so we also re-ran the 135M sweep in that session.
-It reproduced the earlier sweep within $1.1\%$ at every batch size up to 128 and was $4.5\%$ faster at batch~256; Table~\ref{tab:models} uses the re-run so that all three models share one session.
+These runs came from a later session, after a change to the workstation's power plan, so we also re-ran the 135M sweep in it.
+It reproduced the earlier sweep within $1.1\%$ at every batch size up to 128 and took $4.5\%$ less time at batch~256; Table~\ref{tab:models} uses the re-run so that all three models share one session.
 For these runs the harness additionally recorded PyTorch's reserved memory, the driver-reported memory in use, and the Windows shared-GPU-memory counter, which reveals allocations that the driver has placed in system RAM instead of failing; the earlier matrix and batch-sweep runs recorded only peak allocated memory.
 
 \begin{table}[!htbp]
@@ -222,7 +222,7 @@ The regime in which extra sequences are nearly free therefore shrinks with model
 
 \paragraph{Per-step latency does not follow parameter count.}
 At batch~1 the three models take $18.0$, $19.2$, and $10.8$\,ms per decode step respectively.
-The 360M model has $2.7\times$ the parameters of the 135M model but is only $6\%$ slower, and the 1.7B model, with $13\times$ the parameters, is $40\%$ faster.
+The 360M model has $2.7\times$ the parameters of the 135M model but takes only $6\%$ longer per step, and the 1.7B model, with $13\times$ the parameters, takes $40\%$ less time per step (about $1.67\times$ the speed).
 Per layer, the two smaller models take about $0.60$\,ms and the 1.7B model about $0.45$\,ms.
 Reading the 1.7B model's $3.4$\,GB of weights at the card's rated $672$\,GB/s memory bandwidth~\cite{nvidia2026compare} would take about $5$\,ms, roughly half of the measured step.
 Section~\ref{sec:profile} shows that at batch~1 all three models are host-bound, that the two grouped-query models~\cite{ainslie2023gqa} also pay for a math-backend attention fallback, and that weight streaming accounts for most of the 1.7B model's GPU time without setting its step time.
@@ -238,7 +238,7 @@ Our runs used the driver's default policy, so instead of an out-of-memory error,
 The fallback itself is documented driver behavior; what allocated-memory metrics hide is the cause, namely the growth of reserved memory under the dynamic cache, which pushes the process past the device limit while allocated memory would have reported this cell as a comfortable $8$\,GB run.
 PyTorch's expandable-segments allocator option, the usual remedy for fragmentation, is not supported on this platform, and garbage-collection thresholds did not prevent the spill in a preliminary test.
 Preallocating the cache for the full sequence (\texttt{cache\_implementation="static"}, run eagerly) removes the growth: batch~64 reserves $10.7$\,GB, runs in $4.0$\,s, and delivers $2{,}044$ tok/s, versus $1{,}268$ tok/s at batch~32, the largest batch the growing cache could run.
-The static cache is $24\%$ slower at batch~1 but $4\%$ faster at batch~16 and $15\%$ faster at batch~32.
+The static cache takes $24\%$ longer at batch~1 but $4\%$ less time at batch~16 and $15\%$ less at batch~32 (about $1.17\times$ the throughput).
 Profiling (Section~\ref{sec:profile}) attributes the batch-1 penalty mainly to extra kernels per step and the batch-32 gain to avoiding the growing cache's concatenation copies.
 
 \subsection{Where decode-step time goes}
@@ -246,7 +246,7 @@ Profiling (Section~\ref{sec:profile}) attributes the batch-1 penalty mainly to e
 To measure what the sections above could only infer, we profiled single decode steps below and above each model's knee (Table~\ref{tab:profile}).
 A script (\texttt{scripts/profile\_decode.py}) loads each model in BF16 (eager, SDPA), prefills the same 256-token synthetic prompt, and runs a manual greedy loop over a \texttt{DynamicCache} (or a static cache) that mirrors \texttt{generate()}.
 After 8 warmup steps it times 32 steps synchronized after each (wall time) and 32 unsynchronized (host dispatch time), then records 10 steps with \texttt{torch.profiler} (CUPTI) to count kernels and compute GPU busy time as the union of kernel and memory-operation intervals; it also times \texttt{generate()} for the same prompt.
-Idle fractions use the unprofiled wall time, since the profiler lengthens steps by $1.34$--$1.40\times$ below the knee (at most $1.15\times$ above it).
+Idle fractions use the unprofiled wall time, since the profiler lengthens steps by $1.34$--$1.40\times$ below the knee, excluding the first passes of the two starred cells in Table~\ref{tab:profile} ($2.05\times$ and $1.06\times$), and by at most $1.15\times$ above it.
 Each cell ran twice, the second pass in reverse order.
 
 \begin{table}[!htbp]
@@ -256,55 +256,56 @@ Each cell ran twice, the second pass in reverse order.
 \toprule
 Model & Cache & Batch & Wall (ms) & GPU busy (ms) & GPU idle & Kernels/step & Weight BW (GB/s) \\
 \midrule
-135M & dynamic & 1 & 21.0$^\ast$ & 2.73 & 87\% & 1680 & 98 (15\%) \\
- & & 32 & 19.9 & 8.50 & 57\% & 1680 & \\
- & & 128 & 44.1 & 36.6 & 17\% & 1680 & \\
+135M & dynamic & 1 & 21.01$\pm$1.10$^\ast$ & 2.73$\pm$0.01 & 87\% & 1680 & 98 (15\%) \\
+ & & 32 & 19.88$\pm$0.26 & 8.50$\pm$0.01 & 57\% & 1680 & \\
+ & & 128 & 44.14$\pm$0.03 & 36.56$\pm$0.00 & 17\% & 1680 & \\
 \addlinespace
-360M & dynamic & 1 & 24.5$^\ast$ & 4.17 & 83\% & 1790 & 173 (26\%) \\
- & & 16 & 21.0 & 7.92 & 62\% & 1790 & \\
- & & 64 & 41.1 & 33.2 & 19\% & 1822 & \\
+360M & dynamic & 1 & 24.53$\pm$3.26$^\ast$ & 4.17$\pm$0.00 & 83\% & 1790 & 173 (26\%) \\
+ & & 16 & 21.03$\pm$0.00 & 7.92$\pm$0.03 & 62\% & 1790 & \\
+ & & 64 & 41.09$\pm$0.01 & 33.19$\pm$0.04 & 19\% & 1822 & \\
 \addlinespace
-1.7B & dynamic & 1 & 11.9 & 7.24 & 39\% & 990 & 473 (70\%) \\
- & & 16 & 14.9 & 11.9 & 20\% & 990 & \\
- & & 32 & 19.9 & 16.5 & 17\% & 1014 & \\
+1.7B & dynamic & 1 & 11.89$\pm$0.02 & 7.24$\pm$0.00 & 39\% & 990 & 473 (70\%) \\
+ & & 16 & 14.87$\pm$0.01 & 11.85$\pm$0.01 & 20\% & 990 & \\
+ & & 32 & 19.87$\pm$0.03 & 16.55$\pm$0.01 & 17\% & 1014 & \\
 \addlinespace
-1.7B & static & 1 & 13.8 & 7.52 & 45\% & 1144 & 455 (68\%) \\
- & & 32 & 17.2 & 13.2 & 23\% & 1170 & \\
+1.7B & static & 1 & 13.76$\pm$0.09 & 7.52$\pm$0.00 & 45\% & 1144 & 455 (68\%) \\
+ & & 32 & 17.20$\pm$0.01 & 13.21$\pm$0.01 & 23\% & 1170 & \\
 \bottomrule
 \end{tabular}
-\caption{Decode-step profile (BF16, eager, SDPA, prompt 256; manual greedy loop; mean of two passes). Wall: median synchronized step time. GPU busy: union of kernel and memory-operation time per step. Idle: $1-\text{busy}/\text{wall}$. Weight BW: BF16 weight bytes divided by GPU busy time, batch~1 only (percentage of the rated 672\,GB/s). $^\ast$The two passes differed: $22.1$ and $19.9$\,ms (135M), $27.8$ and $21.3$\,ms (360M); the second pass matches the separate GQA runs below ($19.9$--$20.0$ and $21.4$--$21.6$\,ms). All other cells agree within $3\%$ across passes; kernel counts are identical.}
+\caption{Decode-step profile (BF16, eager, SDPA, prompt 256; manual greedy loop). All values are means of two passes; for wall and GPU busy, $\pm$ gives half the range between the passes. Wall: median synchronized step time. GPU busy: union of kernel and memory-operation time per step. Idle: $1-\text{busy}/\text{wall}$. Weight BW: BF16 weight bytes divided by GPU busy time, batch~1 only (percentage of the rated 672\,GB/s). $^\ast$Anomalous first pass ($22.1$ and $27.8$\,ms versus $19.9$ and $21.3$\,ms); the second matches the separate GQA runs below ($19.9$--$20.0$ and $21.4$--$21.6$\,ms). Kernel counts are identical across passes.}
 \label{tab:profile}
 \end{table}
 
 \paragraph{Below the knee the GPU mostly waits for the host.}
 Each step issues exactly $55$ kernels per decoder layer plus $30$ outside the layers for the two grouped-query models and $40$ per layer plus $30$ for the 1.7B model, independent of batch size below the knee.
-Host dispatch time per kernel is $11.7$--$12.0\,\mu$s in every cell below the knee (second pass for the starred cells), and host time outside synchronization waits, measured under the profiler, varies by less than $4\%$ across batch sizes for each model with the dynamic cache; extra sequences are therefore nearly free until GPU busy time catches up.
+Host dispatch time per kernel is $11.7$--$12.0\,\mu$s in every cell below the knee (excluding the starred cells' first passes, $17.4$ and $14.6\,\mu$s), and host time outside synchronization waits (under the profiler) varies by less than $4\%$ across batch sizes for each model with the dynamic cache (cell means; second pass only for 135M at batch~1, whose first pass gave $45.3$ versus $27.2$\,ms); extra sequences are therefore nearly free until GPU busy time catches up.
 For 135M, interpolating busy time between batch~32 and~128 puts that crossover near batch~70 at the profiled KV length of $280$, a rough estimate from three points; the sweep's latency already rises by batch~64.
 With the dynamic cache, Transformers' attention-mask construction forces one GPU-to-CPU synchronization per step, so dispatch time tracks wall time by construction and the evidence for host-bound steps is the idle fraction and the batch-independent host time.
-The static cache has no such synchronization, and at batch~1 its dispatch time ($13.4$\,ms) still equals its unsynchronized wall time.
+The static cache has no such synchronization, yet at batch~1 its dispatch time ($13.4$\,ms) equals its unsynchronized wall time.
 
 \paragraph{Grouped-query attention falls back to the math backend on this build.}
 The $15$ extra kernels per layer in the two smaller models are all inside the SDPA operator (\texttt{aten::scaled\_\allowbreak dot\_\allowbreak product\_\allowbreak attention}), which runs $16$ kernels per call there versus one fused memory-efficient kernel for the 1.7B model.
 Transformers passes \texttt{enable\_gqa=True} when no attention mask is needed; the Windows PyTorch wheel we used is not compiled with FlashAttention, and the memory-efficient kernel requires equal query and key/value head counts, so dispatch selects the math backend, which keeps intermediates in FP32 for BF16 inputs~\cite{pytorchsdpa}.
 In isolation (KV length $300$, batch~1) such a call takes $156$--$188\,\mu$s of host time, versus $32\,\mu$s and $3$ kernels when K/V are repeated explicitly before a multi-head SDPA call.
 Taking that route in the model (\texttt{scripts/probe\_sdpa\_gqa.py}) cuts the batch-1 step from $20.0$ to $15.9$\,ms for 135M ($1{,}290$ kernels) and from $21.5$ to $17.1$\,ms for 360M ($1{,}374$ kernels), about $20\%$, with similar savings at batch~32 and~16.
-PyTorch documents \texttt{enable\_gqa} as supported by its FlashAttention and math backends on CUDA~\cite{pytorchsdpa}, so this is a property of this build rather than of grouped-query attention; we did not test a build with FlashAttention.
+PyTorch documents \texttt{enable\_gqa} as supported by its FlashAttention and math backends on CUDA~\cite{pytorchsdpa}, so this is a property of this build rather than of grouped-query attention.
 
 \paragraph{Why the 1.7B model is faster, and where weight bytes matter.}
-Without the fallback, step time per layer is $0.53$, $0.53$, and $0.50$\,ms for the three models, so the 1.7B model's batch-1 advantage over 135M ($11.9$ vs.\ $20.0$\,ms) splits roughly equally between the fallback ($4.1$\,ms) and six fewer layers ($4.0$\,ms); against 360M the split is $4.4$ and $5.2$\,ms.
-Weight streaming dominates the 1.7B model's GPU time, contrary to the reading of step times alone: matrix--vector kernels take $81\%$ of its kernel time at batch~1.
+Without the fallback, step time per layer is $0.53$, $0.53$, and $0.50$\,ms for the three models, so the 1.7B model's batch-1 advantage over 135M ($11.9$ vs.\ the probe's $20.0$\,ms) splits roughly equally between the fallback ($4.1$\,ms) and six fewer layers ($4.0$\,ms); against 360M the split is $4.4$ and $5.2$\,ms.
+Weight streaming dominates the 1.7B model's GPU time: matrix--vector kernels take $81\%$ of its kernel time at batch~1.
 Its step is nevertheless host-bound, because issuing $990$ kernels takes the host about $11.8$\,ms against $7.2$\,ms of GPU work.
 
 \paragraph{Above the knee.}
 With idle time at $17$--$19\%$ ($23\%$ for the static cache), these steps are GPU-bound.
 For the grouped-query models that time does not go to weights or the KV cache ($1.1\%$ and $3.2\%$ of rated bandwidth for weights, $4.5\%$ and $6.5\%$ including the KV cache): about two-thirds of kernel time is element-wise copies and FP32 element-wise and matrix--vector kernels that occur only inside the math-backend attention call, while the linear layers' BF16 matrix multiplications take under $8\%$.
 Without hardware counters we cannot say whether those kernels are bandwidth- or latency-limited.
-For the 1.7B model at batch~32, $29\%$ of dynamic-cache kernel time is the \texttt{torch.cat} copies that grow the cache, which the static cache avoids, consistent with its $15\%$ advantage in Table~\ref{tab:models}; at batch~1 the static cache is slower mainly because it issues $154$ more kernels per step, while attention over the full preallocated length adds only about $0.2$\,ms of GPU time.
+For the 1.7B model at batch~32, $29\%$ of dynamic-cache kernel time is the \texttt{torch.cat} copies that grow the cache, which the static cache avoids, consistent with its $15\%$ lower batch-32 latency in Table~\ref{tab:models}; at batch~1 it is slower mainly because it issues $154$ more kernels per step, while attention over the full preallocated length adds only about $0.2$\,ms of GPU time.
 
 \paragraph{Session offset.}
-These runs came from a later session in which \texttt{generate()} was $11.6$--$13.2\%$ slower than Table~\ref{tab:models} in every host-bound cell (batch~1: $2{,}603$, $2{,}782$, and $1{,}561$\,ms versus $2{,}308$, $2{,}457$, and $1{,}379$\,ms) but only $0.7$--$1.2\%$ slower in the five GPU-bound cells.
+These runs came from a later session in which \texttt{generate()} took $11.6$--$13.2\%$ longer than in Table~\ref{tab:models} in every host-bound cell but only $0.7$--$1.2\%$ longer in the five GPU-bound cells.
 The difference is thus host-side, and model ratios are unchanged ($1.07$ and $0.60$ relative to 135M), so Table~\ref{tab:profile} should be read within itself.
-Without a Linux comparison we cannot separate framework overhead from Windows driver-model (WDDM) effects on the host cost per kernel.
+An earlier run of the same script, superseded because a background RGB-lighting application was using CPU, had identical kernel counts and GPU busy times within $1.3\%$, but its host-bound cells took $17$--$19\%$ longer than in Table~\ref{tab:models}, versus $11.6$--$13.2\%$ here; its data are in \texttt{results/profile\_decode\_run1/}.
+Without a Linux comparison we cannot separate framework overhead from Windows driver-model (WDDM) effects on per-kernel host cost.
 
 \subsection{Generation length}
 Figure~\ref{fig:gen} plots latency against generated token count for BF16 eager batch~1.
